@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>3D PrintMaster Mobile - Precificação 3D</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'] },
+                    colors: {
+                        dark: { 950: '#020617', 900: '#0f172a', 800: '#1e293b' },
+                        neon: { blue: '#06b6d4', pink: '#ec4899', green: '#10b981' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #020617; background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%); min-height: 100vh; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .tab-active { border-bottom: 2px solid #06b6d4; color: #06b6d4; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        input[type="file"]::file-selector-button { display: none; }
+        .card-glow:active { transform: scale(0.98); transition: transform 0.05s; }
+        /* Ajustes para telas muito pequenas */
+        @media (max-width: 480px) {
+            .text-7xl { font-size: 3rem; line-height: 1.1; }
+            .text-6xl { font-size: 2.5rem; }
+            .p-8 { padding: 1.25rem; }
+            .grid-cols-2 { gap: 0.75rem; }
+        }
+    </style>
+</head>
+<body class="text-slate-200 pb-24">
+
+    <!-- Navbar adaptada para mobile (scroll horizontal leve) -->
+    <nav class="sticky top-0 z-50 glass border-b border-white/5 mb-4">
+        <div class="max-w-6xl mx-auto px-3 flex items-center justify-between h-14">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-neon-blue rounded-lg flex items-center justify-center shadow-[0_0_12px_#06b6d4]">
+                    <i data-lucide="box" class="text-dark-950 w-4 h-4"></i>
+                </div>
+                <span class="font-tech text-lg font-bold tracking-wider">3D<span class="text-neon-blue">CALC</span></span>
+            </div>
+            <div class="flex gap-3 md:gap-6 overflow-x-auto no-scrollbar font-tech uppercase tracking-widest text-[11px]">
+                <button onclick="showTab('calc')" id="btn-calc" class="tab-active py-2 px-1 font-semibold transition-all whitespace-nowrap">CALC</button>
+                <button onclick="showTab('stock')" id="btn-stock" class="py-2 px-1 font-semibold opacity-60 hover:opacity-100 transition-all whitespace-nowrap">ESTOQUE</button>
+                <button onclick="showTab('history')" id="btn-history" class="py-2 px-1 font-semibold opacity-60 hover:opacity-100 transition-all whitespace-nowrap">HISTÓRICO</button>
+                <button onclick="showTab('settings')" id="btn-settings" class="py-2 px-1 font-semibold opacity-60 hover:opacity-100 transition-all whitespace-nowrap">AJUSTES</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-3 pb-16">
+        
+        <!-- ABA CALCULADORA (Layout mobile: coluna única) -->
+        <section id="tab-calc" class="space-y-5">
+            <!-- Card parâmetros -->
+            <div class="glass p-5 rounded-2xl border-white/5">
+                <h2 class="text-neon-blue font-tech text-base mb-3 flex items-center gap-2 uppercase tracking-widest">
+                    <i data-lucide="zap" class="w-4 h-4"></i> Parâmetros
+                </h2>
+                <div class="space-y-3">
+                    <input type="text" id="in-name" placeholder="Nome do Projeto / Cliente" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl focus:border-neon-blue outline-none text-sm">
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Peso (g)</label>
+                            <input type="number" id="in-weight" oninput="calculate()" placeholder="0" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl focus:border-neon-blue outline-none font-mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Tempo (HH:MM)</label>
+                            <input type="text" id="in-time" oninput="calculate()" placeholder="02:30" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl focus:border-neon-blue outline-none font-mono text-sm">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Pós-Processamento (min)</label>
+                        <input type="number" id="in-labor-mins" oninput="calculate()" placeholder="Ex: 15" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Filamento</label>
+                        <select id="in-filament" onchange="calculate()" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue text-sm"></select>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Margem de Lucro</label>
+                            <span id="val-margin" class="text-neon-blue font-bold font-mono text-sm">100%</span>
+                        </div>
+                        <input type="range" id="in-margin" min="0" max="500" value="100" oninput="calculate()" class="w-full h-2 bg-dark-800 rounded-lg accent-neon-blue">
+                        <div class="grid grid-cols-3 gap-2 mt-2 text-[10px] font-bold uppercase tracking-wider font-tech">
+                            <button onclick="setMargin(100)" class="bg-dark-900/50 hover:bg-white/10 p-2 rounded-lg border border-white/5 text-slate-400">Conservador 100%</button>
+                            <button onclick="setMargin(250)" class="bg-dark-900/50 hover:bg-white/10 p-2 rounded-lg border border-white/5 text-slate-400">Normal 250%</button>
+                            <button onclick="setMargin(500)" class="bg-dark-900/50 hover:bg-white/10 p-2 rounded-lg border border-white/5 text-slate-400">Agressivo 500%</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card preço de venda (mobile -->)
+            <div class="glass p-5 rounded-3xl border-neon-blue/20 relative overflow-hidden">
+                <p class="text-slate-400 font-tech uppercase tracking-widest text-xs mb-1">Preço Sugerido</p>
+                <div class="text-6xl font-bold font-tech tracking-tighter text-white mb-4">
+                    R$ <span id="res-total">0,00</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-dark-900/50 p-3 rounded-xl border border-white/5">
+                        <p class="text-[9px] text-slate-500 uppercase font-bold">Material</p>
+                        <p class="text-base font-mono">R$ <span id="res-material">0,00</span></p>
+                    </div>
+                    <div class="bg-dark-900/50 p-3 rounded-xl border border-white/5">
+                        <p class="text-[9px] text-slate-500 uppercase font-bold">Máquina</p>
+                        <p class="text-base font-mono">R$ <span id="res-machine">0,00</span></p>
+                    </div>
+                    <div class="bg-dark-900/50 p-3 rounded-xl border border-white/5 text-yellow-500">
+                        <p class="text-[9px] uppercase font-bold text-slate-500">Manual</p>
+                        <p class="text-base font-mono font-bold">R$ <span id="res-labor">0,00</span></p>
+                    </div>
+                    <div class="bg-dark-900/50 p-3 rounded-xl border border-white/5 text-neon-green">
+                        <p class="text-[9px] uppercase font-bold text-slate-500">Lucro</p>
+                        <p class="text-base font-mono font-bold">R$ <span id="res-profit">0,00</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detalhamento -->
+            <div class="glass p-5 rounded-2xl">
+                <h3 class="text-slate-500 font-tech uppercase tracking-widest text-xs mb-2">Composição</h3>
+                <div id="price-breakdown" class="space-y-2 text-xs"></div>
+            </div>
+            
+            <button onclick="saveToHistory()" class="w-full bg-neon-blue hover:bg-cyan-400 text-dark-950 font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 uppercase tracking-widest font-tech text-sm">
+                <i data-lucide="save" class="w-4 h-4"></i> Salvar Orçamento
+            </button>
+        </section>
+
+        <!-- ABA ESTOQUE (grid responsiva) -->
+        <section id="tab-stock" class="hidden space-y-5">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-tech font-bold uppercase tracking-wider text-neon-green">Filamentos</h2>
+                <button onclick="toggleModal('modal-stock')" class="bg-neon-green text-dark-950 px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> NOVO
+                </button>
+            </div>
+            <div id="stock-list" class="grid grid-cols-1 gap-3"></div>
+        </section>
+
+        <!-- ABA HISTÓRICO (com tabela responsiva: overflow-x-auto) -->
+        <section id="tab-history" class="hidden space-y-5">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-tech font-bold uppercase tracking-wider text-neon-blue">Histórico</h2>
+                <button onclick="clearHistory()" class="text-red-400 text-xs font-bold uppercase p-2">Limpar tudo</button>
+            </div>
+            <div class="glass rounded-2xl overflow-x-auto border-white/5">
+                <table class="w-full text-left text-xs min-w-[400px]">
+                    <thead class="bg-dark-800/50 text-slate-400 uppercase text-[9px] tracking-widest font-bold">
+                        <tr><th class="p-3">Data</th><th class="p-3">Projeto</th><th class="p-3 text-right">Peso/Tempo</th><th class="p-3 text-right">Preço</th><th class="p-3 text-center">Ações</th></tr>
+                    </thead>
+                    <tbody id="history-table" class="divide-y divide-white/5"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ABA AJUSTES (mobile: tudo empilhado) -->
+        <section id="tab-settings" class="hidden space-y-5">
+            <!-- Odômetro e hora -->
+            <div class="grid grid-cols-1 gap-4">
+                <div class="glass p-5 rounded-3xl border-neon-blue/30 relative overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-slate-400 font-tech text-xs uppercase">Tempo total da máquina</h2>
+                        <button onclick="resetOdometer()" class="text-slate-600 hover:text-red-400"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="text-5xl font-bold font-tech text-neon-blue mt-1" id="total-machine-time">0h 0m</div>
+                </div>
+                <div class="glass p-5 rounded-3xl border-yellow-500/30">
+                    <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Valor da sua hora (R$)</label>
+                    <input type="number" id="set-labor-rate" value="30.00" oninput="saveSettings()" class="text-2xl font-tech font-bold bg-transparent border-b border-white/10 w-full outline-none focus:border-yellow-500 text-yellow-500">
+                </div>
+            </div>
+            
+            <!-- Backup -->
+            <div class="glass p-5 rounded-3xl border-pink-500/30">
+                <h2 class="text-base font-tech font-bold uppercase tracking-widest text-pink-500 mb-3 flex items-center gap-2">
+                    <i data-lucide="database" class="w-5 h-5"></i> Backup
+                </h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="exportData()" class="bg-white/5 hover:bg-white/10 py-2 rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-1"><i data-lucide="download" class="w-3 h-3"></i> Exportar</button>
+                    <label class="bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 py-2 rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-1 cursor-pointer">
+                        <i data-lucide="upload" class="w-3 h-3"></i> Importar
+                        <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Seletores rápidos (estado / impressora) -->
+            <div class="glass p-5 rounded-3xl space-y-4">
+                <h2 class="text-base font-tech font-bold uppercase tracking-widest text-neon-blue">Preencher custos</h2>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Por Estado (kWh)</label>
+                    <select id="stateSelect" onchange="applyStateCost()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl text-sm">
+                        <option value="">Selecione seu estado...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Por Impressora</label>
+                    <select id="printerSelect" onchange="applyPrinterData()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl text-sm">
+                        <option value="">Selecione sua impressora...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Parâmetros técnicos -->
+            <div class="glass p-5 rounded-3xl space-y-4">
+                <h2 class="text-base font-tech font-bold uppercase tracking-widest text-slate-400">Custos máquina</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[9px] uppercase text-slate-500">Preço máq (R$)</label><input type="number" id="set-printer-price" value="2000" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-2 rounded-lg text-sm"></div>
+                    <div><label class="text-[9px] uppercase text-slate-500">Vida útil (h)</label><input type="number" id="set-life" value="5000" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-2 rounded-lg text-sm"></div>
+                    <div><label class="text-[9px] uppercase text-slate-500">Custo kWh</label><input type="number" id="set-kwh" step="0.01" value="0.85" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-2 rounded-lg text-sm"></div>
+                    <div><label class="text-[9px] uppercase text-slate-500">Watts</label><input type="number" id="set-watts" value="150" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-2 rounded-lg text-sm"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL ESTOQUE (mobile) -->
+    <div id="modal-stock" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden">
+        <div class="glass w-full max-w-sm p-5 rounded-3xl border-neon-green/30">
+            <h3 class="text-xl font-tech font-bold uppercase mb-4 text-neon-green text-center">Novo Filamento</h3>
+            <div class="space-y-4">
+                <input type="text" id="stk-name" placeholder="Marca / Cor" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl text-sm">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="stk-price" placeholder="Preço R$" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl text-sm">
+                    <input type="number" id="stk-weight" placeholder="Peso g" value="1000" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl text-sm">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="toggleModal('modal-stock')" class="flex-1 py-3 text-xs font-bold opacity-60">CANCELAR</button>
+                    <button onclick="addStock()" class="flex-1 bg-neon-green text-dark-950 py-3 rounded-xl font-bold uppercase text-sm">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== MESMA LÓGICA DO SEU SISTEMA, MAS OTIMIZADA PARA MOBILE ==========
+        const electricityCostsByState = {
+            "AC":1.42,"AL":1.32,"AP":1.19,"AM":1.27,"BA":1.38,"CE":1.33,"DF":1.24,"ES":1.30,"GO":1.26,
+            "MA":1.29,"MT":1.35,"MS":1.23,"MG":1.27,"PA":1.22,"PB":1.30,"PR":1.20,"PE":1.36,"PI":1.26,
+            "RJ":1.33,"RN":1.32,"RS":1.40,"RO":1.20,"RR":1.17,"SC":1.22,"SP":1.27,"SE":1.29,"TO":1.23
+        };
+        const commonPrinters = {
+            "Creality Ender 3/V2/Neo":{wattage:150,price:1800},"Creality CR-10":{wattage:300,price:3000},
+            "Creality Ender 3 V3":{wattage:200,price:2500},"Creality K1/K1C":{wattage:350,price:4000},
+            "Prusa i3 MK3S+":{wattage:180,price:6000},"Anycubic Mega":{wattage:200,price:1500},
+            "Artillery Sidewinder":{wattage:250,price:2200},"Bambu Lab P1P/X1C":{wattage:350,price:12000},
+            "Bambu Lab A1":{wattage:280,price:3800},"Voron 2.4":{wattage:500,price:8000}
+        };
+
+        let state = {
+            stock: JSON.parse(localStorage.getItem('3dcalc_stock_v5')) || [],
+            history: JSON.parse(localStorage.getItem('3dcalc_history_v5')) || [],
+            totalHours: parseFloat(localStorage.getItem('3dcalc_total_hours_v5')) || 0,
+            settings: JSON.parse(localStorage.getItem('3dcalc_settings_v5')) || { kwh:0.85, watts:150, printerPrice:2000, printerLife:5000, laborRate:30 }
+        };
+
+        function escapeHtml(s){ let d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+        function parseTime(t){ if(!t) return 0; if(t.includes(':')){ let [h,m]=t.split(':').map(Number); return (h||0)+(m||0)/60; } return parseFloat(t)||0; }
+        function saveAll(){ localStorage.setItem('3dcalc_stock_v5',JSON.stringify(state.stock)); localStorage.setItem('3dcalc_history_v5',JSON.stringify(state.history)); localStorage.setItem('3dcalc_settings_v5',JSON.stringify(state.settings)); localStorage.setItem('3dcalc_total_hours_v5',state.totalHours); }
+        
+        function calculate(){
+            let w=parseFloat(document.getElementById('in-weight').value)||0;
+            let time=parseTime(document.getElementById('in-time').value);
+            let laborMins=parseFloat(document.getElementById('in-labor-mins').value)||0;
+            let filId=parseInt(document.getElementById('in-filament').value);
+            let margin=parseFloat(document.getElementById('in-margin').value)/100;
+            document.getElementById('val-margin').innerText=(margin*100).toFixed(0)+'%';
+            let mat=0, fil=state.stock.find(s=>s.id===filId);
+            if(fil && fil.weight>0) mat=(fil.price/fil.weight)*w;
+            let s=state.settings;
+            let energy=((s.watts||0)/1000)*time*(s.kwh||0);
+            let depr=((s.printerPrice||0)/Math.max(1,s.printerLife||1))*time;
+            let labor=((s.laborRate||0)/60)*laborMins;
+            let total=mat+energy+depr+labor;
+            let profit=total*margin;
+            let final=total+profit;
+            document.getElementById('res-total').innerText=final.toLocaleString('pt-BR',{minFractionDigits:2});
+            document.getElementById('res-material').innerText=mat.toLocaleString('pt-BR',{minFractionDigits:2});
+            document.getElementById('res-machine').innerText=(energy+depr).toLocaleString('pt-BR',{minFractionDigits:2});
+            document.getElementById('res-labor').innerText=labor.toLocaleString('pt-BR',{minFractionDigits:2});
+            document.getElementById('res-profit').innerText=profit.toLocaleString('pt-BR',{minFractionDigits:2});
+            document.getElementById('price-breakdown').innerHTML=`
+                <div class="flex justify-between"><span>Filamento</span><span class="text-neon-blue">R$ ${mat.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Energia</span><span>R$ ${energy.toFixed(2)}</span></div>
+                <div class="flex justify-between"><span>Depreciação</span><span>R$ ${depr.toFixed(2)}</span></div>
+                <div class="flex justify-between text-yellow-500"><span>Manual</span><span>R$ ${labor.toFixed(2)}</span></div>
+                <div class="flex justify-between text-neon-green font-bold"><span>Lucro (${(margin*100).toFixed(0)}%)</span><span>R$ ${profit.toFixed(2)}</span></div>
+            `;
+            saveSettings();
+        }
+        
+        function setMargin(v){ document.getElementById('in-margin').value=v; calculate(); }
+        
+        // Estoque
+        function addStock(){
+            let n=document.getElementById('stk-name').value.trim();
+            let p=parseFloat(document.getElementById('stk-price').value);
+            let w=parseFloat(document.getElementById('stk-weight').value);
+            if(!n||isNaN(p)||isNaN(w)||p<=0||w<=0) return alert("Preencha corretamente");
+            state.stock.push({id:Date.now(),name:n,price:p,weight:w});
+            saveAndRefresh(); toggleModal('modal-stock');
+            document.getElementById('stk-name').value=''; document.getElementById('stk-price').value=''; document.getElementById('stk-weight').value='1000';
+        }
+        function removeStock(id){ if(confirm("Remover?")){ state.stock=state.stock.filter(s=>s.id!==id); saveAndRefresh(); } }
+        function updateStockList(){
+            let div=document.getElementById('stock-list');
+            if(!state.stock.length) div.innerHTML='<div class="text-center py-8 text-slate-500">Nenhum filamento cadastrado</div>';
+            else div.innerHTML=state.stock.map(s=>`
+                <div class="glass p-4 rounded-2xl flex justify-between items-center">
+                    <div><h3 class="font-bold">${escapeHtml(s.name)}</h3><span class="text-xs text-slate-400">${s.weight}g · R$ ${s.price.toFixed(2)}</span></div>
+                    <button onclick="removeStock(${s.id})" class="text-slate-600 hover:text-red-400"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+        
+        // Histórico
+        function saveToHistory(){
+            if(!state.stock.length) return alert("Cadastre um filamento primeiro");
+            let name=document.getElementById('in-name').value.trim()||"Projeto";
+            let timeStr=document.getElementById('in-time').value||"0:00";
+            let hrs=parseTime(timeStr);
+            state.history.unshift({ id:Date.now(), date:new Date().toLocaleDateString('pt-BR'), name, price:document.getElementById('res-total').innerText, stats:`${document.getElementById('in-weight').value}g / ${timeStr}`, hours:hrs });
+            state.totalHours+=hrs;
+            saveAll(); updateHistoryTable(); updateUptimeDisplay();
+            alert("Orçamento salvo!");
+        }
+        function removeHistory(id){
+            let item=state.history.find(h=>h.id===id);
+            if(item) state.totalHours=Math.max(0,state.totalHours-(item.hours||0));
+            state.history=state.history.filter(h=>h.id!==id);
+            saveAll(); updateHistoryTable(); updateUptimeDisplay();
+        }
+        function clearHistory(){ if(confirm("Apagar histórico?")){ state.history=[]; state.totalHours=0; saveAll(); updateHistoryTable(); updateUptimeDisplay(); } }
+        function updateHistoryTable(){
+            let tbody=document.getElementById('history-table');
+            if(!state.history.length) tbody.innerHTML='<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum projeto salvo</td></tr>';
+            else tbody.innerHTML=state.history.map(h=>`
+                <tr><td class="p-3 text-xs">${h.date}</td><td class="p-3 font-semibold text-sm">${escapeHtml(h.name)}</td><td class="p-3 text-right text-xs">${h.stats}</td><td class="p-3 text-right font-bold text-neon-blue text-sm">R$ ${h.price}</td><td class="p-3 text-center"><button onclick="removeHistory(${h.id})" class="text-slate-500 hover:text-red-400"><i data-lucide="x" class="w-4 h-4"></i></button></td></tr>
+            `).join('');
+            lucide.createIcons();
+        }
+        function updateUptimeDisplay(){ let h=Math.floor(state.totalHours), m=Math.round((state.totalHours-h)*60); document.getElementById('total-machine-time').innerText=`${h}h ${m}m`; }
+        function resetOdometer(){ if(confirm("Zerar tempo da máquina?")){ state.totalHours=0; saveAll(); updateUptimeDisplay(); } }
+        
+        // Configurações / Preenchimento automático
+        function populateSelects(){
+            let stateSel=document.getElementById('stateSelect');
+            stateSel.innerHTML='<option value="">Selecione seu estado...</option>';
+            for(let uf in electricityCostsByState) stateSel.innerHTML+=`<option value="${uf}">${uf} (R$ ${electricityCostsByState[uf].toFixed(2)})</option>`;
+            let currentKwh=parseFloat(state.settings.kwh);
+            for(let uf in electricityCostsByState) if(Math.abs(electricityCostsByState[uf]-currentKwh)<0.01) stateSel.value=uf;
+            
+            let printerSel=document.getElementById('printerSelect');
+            printerSel.innerHTML='<option value="">Selecione sua impressora...</option>';
+            for(let name in commonPrinters) printerSel.innerHTML+=`<option value="${name}">${name} (${commonPrinters[name].wattage}W)</option>`;
+            let currWatts=parseFloat(state.settings.watts), currPrice=parseFloat(state.settings.printerPrice);
+            for(let name in commonPrinters) if(Math.abs(commonPrinters[name].wattage-currWatts)<10 && Math.abs(commonPrinters[name].price-currPrice)<100) printerSel.value=name;
+        }
+        function applyStateCost(){ let uf=document.getElementById('stateSelect').value; if(uf && electricityCostsByState[uf]){ document.getElementById('set-kwh').value=electricityCostsByState[uf]; saveSettings(); } }
+        function applyPrinterData(){ let pr=document.getElementById('printerSelect').value; if(pr && commonPrinters[pr]){ document.getElementById('set-watts').value=commonPrinters[pr].wattage; document.getElementById('set-printer-price').value=commonPrinters[pr].price; saveSettings(); } }
+        
+        function saveSettings(){
+            state.settings={ laborRate:parseFloat(document.getElementById('set-labor-rate').value)||0, kwh:parseFloat(document.getElementById('set-kwh').value)||0, watts:parseFloat(document.getElementById('set-watts').value)||0, printerLife:parseFloat(document.getElementById('set-life').value)||5000, printerPrice:parseFloat(document.getElementById('set-printer-price').value)||0 };
+            localStorage.setItem('3dcalc_settings_v5',JSON.stringify(state.settings));
+            calculate();
+        }
+        function loadSettings(){
+            let s=state.settings;
+            document.getElementById('set-labor-rate').value=s.laborRate;
+            document.getElementById('set-kwh').value=s.kwh;
+            document.getElementById('set-watts').value=s.watts;
+            document.getElementById('set-life').value=s.printerLife;
+            document.getElementById('set-printer-price').value=s.printerPrice||2000;
+        }
+        function updateFilamentSelect(){
+            let sel=document.getElementById('in-filament');
+            sel.innerHTML=state.stock.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')||'<option disabled>Cadastre no estoque</option>';
+            calculate();
+        }
+        function saveAndRefresh(){ saveAll(); updateStockList(); updateFilamentSelect(); updateHistoryTable(); updateUptimeDisplay(); calculate(); }
+        function showTab(tab){ document.querySelectorAll('section').forEach(s=>s.classList.add('hidden')); document.getElementById(`tab-${tab}`).classList.remove('hidden'); document.querySelectorAll('nav button').forEach(b=>b.classList.remove('tab-active')); document.getElementById(`btn-${tab}`).classList.add('tab-active'); lucide.createIcons(); }
+        function toggleModal(id){ document.getElementById(id).classList.toggle('hidden'); }
+        
+        function exportData(){ let blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`3dcalc_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+        function importData(e){ let file=e.target.files[0]; if(!file) return; let reader=new FileReader(); reader.onload=ev=>{ try{ let imp=JSON.parse(ev.target.result); if(confirm("Substituir dados atuais?")){ state=imp; if(!state.stock) state.stock=[]; if(!state.history) state.history=[]; if(typeof state.totalHours!='number') state.totalHours=0; if(!state.settings) state.settings={kwh:0.85,watts:150,printerPrice:2000,printerLife:5000,laborRate:30}; saveAll(); location.reload(); } }catch(e){ alert("Arquivo inválido"); } }; reader.readAsText(file); }
+        
+        document.addEventListener('DOMContentLoaded',()=>{
+            loadSettings(); populateSelects(); updateStockList(); updateFilamentSelect(); updateHistoryTable(); updateUptimeDisplay(); lucide.createIcons(); calculate();
+        });
+    </script>
+</body>
+</html>
