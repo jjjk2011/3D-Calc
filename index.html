@@ -27,6 +27,41 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         input[type="file"]::file-selector-button { display: none; }
         .card-glow:hover { box-shadow: 0 0 20px rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.3); }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: #10b981;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 9999;
+            font-family: 'Rajdhani', monospace;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(16,185,129,0.3);
+            white-space: nowrap;
+            animation: fadeInOut 2s ease-in-out forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
+        }
+        .material-btn {
+            transition: all 0.2s;
+        }
+        .material-btn.active {
+            background-color: #10b981;
+            color: #020617;
+            border-color: #10b981;
+            box-shadow: 0 0 10px rgba(16,185,129,0.5);
+        }
     </style>
 </head>
 <body class="text-slate-200">
@@ -39,7 +74,6 @@
                 </div>
                 <span class="font-tech text-xl font-bold tracking-wider">3D<span class="text-neon-blue">CALC</span></span>
             </div>
-            
             <div class="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar font-tech uppercase tracking-widest">
                 <button onclick="showTab('calc')" id="btn-calc" class="tab-active py-2 px-1 text-sm font-semibold transition-all">CALC</button>
                 <button onclick="showTab('stock')" id="btn-stock" class="py-2 px-1 text-sm font-semibold opacity-60 hover:opacity-100 transition-all">ESTOQUE</button>
@@ -51,9 +85,8 @@
 
     <main class="max-w-6xl mx-auto px-4 pb-20">
         
-        <!-- CALCULADORA (LAYOUT HORIZONTAL ORIGINAL) -->
+        <!-- CALCULADORA -->
         <section id="tab-calc" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- COLUNA ESQUERDA: PARÂMETROS -->
             <div class="lg:col-span-5 space-y-6">
                 <div class="glass p-6 rounded-2xl border-white/5">
                     <h2 class="text-neon-blue font-tech text-lg mb-4 flex items-center gap-2 uppercase tracking-widest">
@@ -101,7 +134,6 @@
                 </button>
             </div>
 
-            <!-- COLUNA DIREITA: RESULTADOS -->
             <div class="lg:col-span-7 space-y-6">
                 <div class="glass p-8 rounded-3xl border-neon-blue/20 relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-8 opacity-5">
@@ -183,7 +215,6 @@
                 </div>
             </div>
 
-            <!-- BACKUP E RESTAURAÇÃO -->
             <div class="glass p-8 rounded-3xl border-pink-500/30">
                 <h2 class="text-xl font-tech font-bold uppercase tracking-widest text-pink-500 mb-6 flex items-center gap-3">
                     <i data-lucide="database" class="w-6 h-6"></i> Banco de Dados Local
@@ -205,7 +236,6 @@
                 </div>
             </div>
 
-            <!-- Seletores rápidos (estado / impressora) -->
             <div class="glass p-8 rounded-3xl space-y-6">
                 <h2 class="text-xl font-tech font-bold uppercase tracking-widest text-slate-400">Preencher Custos Automaticamente</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -224,7 +254,6 @@
                 </div>
             </div>
 
-            <!-- Custos de Hardware -->
             <div class="glass p-8 rounded-3xl border-white/5 space-y-6">
                 <h2 class="text-xl font-tech font-bold uppercase tracking-widest text-slate-400">Parâmetros de Custo Máquina</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -249,28 +278,46 @@
         </section>
     </main>
 
-    <!-- MODAL ESTOQUE -->
+    <!-- NOVO MODAL ESTOQUE (layout igual à imagem) -->
     <div id="modal-stock" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden">
-        <div class="glass w-full max-w-md p-8 rounded-3xl border-neon-green/30">
-            <h3 class="text-2xl font-tech font-bold uppercase mb-6 text-neon-green tracking-widest">Cadastrar Rolo</h3>
+        <div class="glass w-full max-w-md p-6 rounded-3xl border-neon-green/30">
+            <h3 class="text-2xl font-tech font-bold uppercase mb-5 text-neon-green tracking-widest text-center">Novo Carretel</h3>
             <div class="space-y-5">
+                <!-- Marca -->
                 <div>
-                    <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Marca / Cor</label>
-                    <input type="text" id="stk-name" placeholder="Ex: GTMax PLA Azul" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green">
+                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">MARCA</label>
+                    <input type="text" id="stk-brand" placeholder="Ex: Creality, Bambu, Voolt..." class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Preço do Rolo (R$)</label>
-                        <input type="number" id="stk-price" placeholder="0.00" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none">
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase text-slate-500 font-bold mb-1 block">Peso Líquido (g)</label>
-                        <input type="number" id="stk-weight" value="1000" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none">
-                    </div>
+                <!-- Cor / Descrição -->
+                <div>
+                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">COR / DESCRIÇÃO</label>
+                    <input type="text" id="stk-color" placeholder="Ex: Azul Naval, Transparente, Bronzado" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm">
                 </div>
-                <div class="flex gap-4 pt-6">
-                    <button onclick="toggleModal('modal-stock')" class="flex-1 py-4 text-xs font-bold opacity-40 uppercase tracking-widest">Voltar</button>
-                    <button onclick="addStock()" class="flex-1 bg-neon-green text-dark-950 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.2)]">Salvar Rolo</button>
+                <!-- Peso Inicial (g) -->
+                <div>
+                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">PESO INICIAL (G)</label>
+                    <input type="number" id="stk-weight" value="1000" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm font-mono">
+                </div>
+                <!-- Preço Pago (R$) -->
+                <div>
+                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">PREÇO PAGO (R$)</label>
+                    <input type="number" id="stk-price" placeholder="0.00" step="0.01" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm font-mono">
+                </div>
+                <!-- MATERIAL (botões) -->
+                <div>
+                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-2">MATERIAL</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-material="PLA" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">PLA</button>
+                        <button type="button" data-material="PETG" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">PETG</button>
+                        <button type="button" data-material="ABS" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">ABS</button>
+                        <button type="button" data-material="TPU" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">TPU</button>
+                        <button type="button" data-material="ASA" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">ASA</button>
+                    </div>
+                    <input type="hidden" id="stk-material" value="PLA">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="toggleModal('modal-stock')" class="flex-1 py-3 text-xs font-bold uppercase opacity-60 hover:opacity-100 transition-all">CANCELAR</button>
+                    <button onclick="addStock()" class="flex-1 bg-neon-green text-dark-950 py-3 rounded-xl font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:bg-emerald-400 transition-all">SALVAR CARRETEL</button>
                 </div>
             </div>
         </div>
@@ -299,15 +346,69 @@
             settings: JSON.parse(localStorage.getItem('3dcalc_settings_v5')) || { kwh:0.85, watts:150, printerPrice:2000, printerLife:5000, laborRate:30 }
         };
 
+        // Inicializar seleção de material nos botões
+        function resetMaterialButtons() {
+            const btns = document.querySelectorAll('.material-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            const plaBtn = document.querySelector('.material-btn[data-material="PLA"]');
+            if(plaBtn) plaBtn.classList.add('active');
+            document.getElementById('stk-material').value = 'PLA';
+        }
+
+        function initMaterialButtons() {
+            const btns = document.querySelectorAll('.material-btn');
+            const hiddenMaterial = document.getElementById('stk-material');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    hiddenMaterial.value = btn.getAttribute('data-material');
+                });
+            });
+            resetMaterialButtons();
+        }
+
         // ==================== UTILITÁRIOS ====================
         function escapeHtml(s){ let d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-        function parseTime(t){ if(!t) return 0; if(t.includes(':')){ let [h,m]=t.split(':').map(Number); return (h||0)+(m||0)/60; } return parseFloat(t)||0; }
-        function saveAll(){ localStorage.setItem('3dcalc_stock_v5',JSON.stringify(state.stock)); localStorage.setItem('3dcalc_history_v5',JSON.stringify(state.history)); localStorage.setItem('3dcalc_settings_v5',JSON.stringify(state.settings)); localStorage.setItem('3dcalc_total_hours_v5',state.totalHours); }
+        function parseTime(t){ 
+            if(!t) return 0; 
+            if(t.includes(':')){ 
+                let [h,m]=t.split(':').map(Number); 
+                if(isNaN(h) || isNaN(m)) return null;
+                return (h||0)+(m||0)/60; 
+            } 
+            let v = parseFloat(t);
+            return isNaN(v) ? null : v;
+        }
+        function saveAll(){ 
+            localStorage.setItem('3dcalc_stock_v5', JSON.stringify(state.stock)); 
+            localStorage.setItem('3dcalc_history_v5', JSON.stringify(state.history)); 
+            localStorage.setItem('3dcalc_settings_v5', JSON.stringify(state.settings)); 
+            localStorage.setItem('3dcalc_total_hours_v5', state.totalHours); 
+        }
+        
+        function showToast(message, isError = false) {
+            const existingToast = document.querySelector('.toast');
+            if(existingToast) existingToast.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            if(isError) toast.style.borderColor = '#ef4444';
+            document.body.appendChild(toast);
+            setTimeout(() => { if(toast) toast.remove(); }, 2000);
+        }
         
         // ==================== CÁLCULO ====================
         function calculate(){
             let w=parseFloat(document.getElementById('in-weight').value)||0;
-            let time=parseTime(document.getElementById('in-time').value);
+            let timeInput=document.getElementById('in-time');
+            let parsedTime=parseTime(timeInput.value);
+            let time = parsedTime === null ? 0 : parsedTime;
+            if(parsedTime === null && timeInput.value !== ''){
+                timeInput.style.borderColor='#ef4444';
+            } else {
+                timeInput.style.borderColor='';
+            }
             let laborMins=parseFloat(document.getElementById('in-labor-mins').value)||0;
             let filId=parseInt(document.getElementById('in-filament').value);
             let margin=parseFloat(document.getElementById('in-margin').value)/100;
@@ -321,11 +422,11 @@
             let total=mat+energy+depr+labor;
             let profit=total*margin;
             let final=total+profit;
-            document.getElementById('res-total').innerText=final.toLocaleString('pt-BR',{minFractionDigits:2});
-            document.getElementById('res-material').innerText=mat.toLocaleString('pt-BR',{minFractionDigits:2});
-            document.getElementById('res-machine').innerText=(energy+depr).toLocaleString('pt-BR',{minFractionDigits:2});
-            document.getElementById('res-labor').innerText=labor.toLocaleString('pt-BR',{minFractionDigits:2});
-            document.getElementById('res-profit').innerText=profit.toLocaleString('pt-BR',{minFractionDigits:2});
+            document.getElementById('res-total').innerText=final.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+            document.getElementById('res-material').innerText=mat.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+            document.getElementById('res-machine').innerText=(energy+depr).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+            document.getElementById('res-labor').innerText=labor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+            document.getElementById('res-profit').innerText=profit.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
             document.getElementById('price-breakdown').innerHTML=`
                 <div class="flex justify-between items-center py-1 border-b border-white/5"><span>Filamento</span><span class="font-mono text-neon-blue">R$ ${mat.toFixed(2)}</span></div>
                 <div class="flex justify-between items-center py-1 border-b border-white/5"><span>Energia Elétrica</span><span class="font-mono">R$ ${energy.toFixed(2)}</span></div>
@@ -333,114 +434,304 @@
                 <div class="flex justify-between items-center py-1 text-yellow-500"><span>Trabalho Manual</span><span class="font-mono font-bold">R$ ${labor.toFixed(2)}</span></div>
                 <div class="flex justify-between items-center py-1 text-neon-green pt-2 border-t border-white/10"><span>Margem de Lucro (${(margin*100).toFixed(0)}%)</span><span class="font-mono font-bold">R$ ${profit.toFixed(2)}</span></div>
             `;
-            saveSettings();
         }
         
         function setMargin(v){ document.getElementById('in-margin').value=v; calculate(); }
         
-        // ==================== ESTOQUE ====================
+        // ==================== ESTOQUE (COM OS NOVOS CAMPOS) ====================
         function addStock(){
-            let n=document.getElementById('stk-name').value.trim();
-            let p=parseFloat(document.getElementById('stk-price').value);
-            let w=parseFloat(document.getElementById('stk-weight').value);
-            if(!n||isNaN(p)||isNaN(w)||p<=0||w<=0) return alert("Preencha corretamente");
-            state.stock.push({id:Date.now(),name:n,price:p,weight:w});
-            saveAndRefresh(); toggleModal('modal-stock');
-            document.getElementById('stk-name').value=''; document.getElementById('stk-price').value=''; document.getElementById('stk-weight').value='1000';
+            let brand = document.getElementById('stk-brand').value.trim();
+            let color = document.getElementById('stk-color').value.trim();
+            let weight = parseFloat(document.getElementById('stk-weight').value);
+            let price = parseFloat(document.getElementById('stk-price').value);
+            let material = document.getElementById('stk-material').value;
+            
+            if(!brand && !color){
+                showToast("Informe pelo menos a MARCA ou a COR", true);
+                return;
+            }
+            if(isNaN(weight) || weight <= 0){
+                showToast("Peso inválido (deve ser maior que 0)", true);
+                return;
+            }
+            if(isNaN(price) || price <= 0){
+                showToast("Preço inválido (deve ser maior que 0)", true);
+                return;
+            }
+            
+            // Monta o nome completo: "Marca - Cor" ou apenas Marca ou apenas Cor
+            let fullName = "";
+            if(brand && color) fullName = `${brand} - ${color}`;
+            else if(brand) fullName = brand;
+            else fullName = color;
+            
+            // Adiciona o filamento com os campos existentes (id, name, price, weight) e também guarda material opcional
+            state.stock.push({ 
+                id: Date.now(), 
+                name: fullName, 
+                price: price, 
+                weight: weight,
+                material: material   // extra, mas pode ser usado futuramente
+            });
+            saveAll();
+            updateStockList();
+            updateFilamentSelect();
+            calculate();
+            toggleModal('modal-stock');
+            // Limpar campos do modal
+            document.getElementById('stk-brand').value = '';
+            document.getElementById('stk-color').value = '';
+            document.getElementById('stk-weight').value = '1000';
+            document.getElementById('stk-price').value = '';
+            resetMaterialButtons();
+            lucide.createIcons();
+            showToast(`Filamento "${fullName}" adicionado!`);
         }
-        function removeStock(id){ if(confirm("Remover este filamento?")){ state.stock=state.stock.filter(s=>s.id!==id); saveAndRefresh(); } }
+        
+        function removeStock(id){ 
+            if(confirm("Remover este filamento?")){ 
+                state.stock = state.stock.filter(s => s.id !== id); 
+                saveAll();
+                updateStockList();
+                updateFilamentSelect();
+                calculate();
+                lucide.createIcons();
+                showToast("Filamento removido");
+            } 
+        }
+        
         function updateStockList(){
-            let div=document.getElementById('stock-list');
-            if(!state.stock.length) div.innerHTML='<div class="text-center py-10 text-slate-500 col-span-full">Nenhum filamento cadastrado</div>';
-            else div.innerHTML=state.stock.map(s=>`
-                <div class="glass p-5 rounded-2xl border-white/5 card-glow transition-all">
-                    <div class="flex justify-between mb-4"><h3 class="font-bold text-white">${escapeHtml(s.name)}</h3><button onclick="removeStock(${s.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
-                    <div class="flex justify-between items-end"><span class="text-2xl font-tech font-bold text-neon-green">R$ ${s.price.toFixed(2)}</span><span class="text-xs text-slate-500 font-mono">${s.weight}g</span></div>
-                </div>
-            `).join('');
+            let div = document.getElementById('stock-list');
+            if(!state.stock.length){
+                div.innerHTML = '<div class="text-center py-10 text-slate-500 col-span-full">Nenhum filamento cadastrado</div>';
+            } else {
+                div.innerHTML = state.stock.map(s => `
+                    <div class="glass p-5 rounded-2xl border-white/5 card-glow transition-all">
+                        <div class="flex justify-between mb-4"><h3 class="font-bold text-white">${escapeHtml(s.name)}</h3><button onclick="removeStock(${s.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+                        <div class="flex justify-between items-end"><span class="text-2xl font-tech font-bold text-neon-green">R$ ${s.price.toFixed(2)}</span><span class="text-xs text-slate-500 font-mono">${s.weight}g</span></div>
+                        ${s.material ? `<div class="text-[9px] text-slate-500 mt-2 uppercase tracking-wider">${escapeHtml(s.material)}</div>` : ''}
+                    </div>
+                `).join('');
+            }
             lucide.createIcons();
         }
         
         // ==================== HISTÓRICO ====================
         function saveToHistory(){
-            if(!state.stock.length) return alert("Cadastre um filamento primeiro");
-            let name=document.getElementById('in-name').value.trim()||"Projeto";
-            let timeStr=document.getElementById('in-time').value||"0:00";
-            let hrs=parseTime(timeStr);
-            state.history.unshift({ id:Date.now(), date:new Date().toLocaleDateString('pt-BR'), name, price:document.getElementById('res-total').innerText, stats:`${document.getElementById('in-weight').value}g / ${timeStr}`, hours:hrs });
-            state.totalHours+=hrs;
-            saveAll(); updateHistoryTable(); updateUptimeDisplay();
-            alert("Orçamento salvo com sucesso!");
+            if(!state.stock.length){
+                showToast("Cadastre um filamento primeiro", true);
+                return;
+            }
+            let name = document.getElementById('in-name').value.trim();
+            if(name === "") name = "Projeto sem nome";
+            let timeStr = document.getElementById('in-time').value || "0:00";
+            let hrs = parseTime(timeStr);
+            let weight = document.getElementById('in-weight').value || "0";
+            let priceFinal = parseFloat(document.getElementById('res-total').innerText.replace(/\./g,'').replace(',','.')) || 0;
+            
+            state.history.unshift({ 
+                id: Date.now(), 
+                date: new Date().toLocaleDateString('pt-BR'), 
+                name, 
+                price: priceFinal, 
+                stats: `${weight}g / ${timeStr}`, 
+                hours: hrs 
+            });
+            state.totalHours += hrs;
+            saveAll(); 
+            updateHistoryTable(); 
+            updateUptimeDisplay();
+            showToast("Orçamento salvo! ✅");
+            
+            // Limpar campos do projeto (exceto filamento e margem)
+            document.getElementById('in-name').value = "";
+            document.getElementById('in-weight').value = "";
+            document.getElementById('in-time').value = "";
+            document.getElementById('in-labor-mins').value = "";
+            calculate();
         }
+        
         function removeHistory(id){
-            let item=state.history.find(h=>h.id===id);
-            if(item) state.totalHours=Math.max(0,state.totalHours-(item.hours||0));
-            state.history=state.history.filter(h=>h.id!==id);
-            saveAll(); updateHistoryTable(); updateUptimeDisplay();
+            let item = state.history.find(h => h.id === id);
+            if(item) state.totalHours = Math.max(0, state.totalHours - (item.hours || 0));
+            state.history = state.history.filter(h => h.id !== id);
+            saveAll(); 
+            updateHistoryTable(); 
+            updateUptimeDisplay();
+            showToast("Item removido do histórico");
         }
-        function clearHistory(){ if(confirm("Apagar todo o histórico? Isso também zerará o tempo total da máquina.")){ state.history=[]; state.totalHours=0; saveAll(); updateHistoryTable(); updateUptimeDisplay(); } }
+        
+        function clearHistory(){ 
+            if(confirm("Apagar todo o histórico? Isso também zerará o tempo total da máquina.")){ 
+                state.history = []; 
+                state.totalHours = 0; 
+                saveAll(); 
+                updateHistoryTable(); 
+                updateUptimeDisplay(); 
+                showToast("Histórico limpo");
+            } 
+        }
+        
         function updateHistoryTable(){
-            let tbody=document.getElementById('history-table');
-            if(!state.history.length) tbody.innerHTML='<tr><td colspan="5" class="p-8 text-center text-slate-500">Nenhum projeto salvo ainda.</td></tr>';
-            else tbody.innerHTML=state.history.map(h=>`
-                <tr class="hover:bg-white/[0.02] transition-colors">
-                    <td class="p-5 text-xs text-slate-500">${h.date}</td>
-                    <td class="p-5 font-bold text-slate-200">${escapeHtml(h.name)}</td>
-                    <td class="p-5 text-right font-mono text-xs text-slate-400">${h.stats}</td>
-                    <td class="p-5 text-right font-bold text-neon-blue">R$ ${h.price}</td>
-                    <td class="p-5 text-center"><button onclick="removeHistory(${h.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button></td>
-                </tr>
-            `).join('');
+            let tbody = document.getElementById('history-table');
+            if(!state.history.length){
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">Nenhum projeto salvo ainda.</td></tr>';
+            } else {
+                tbody.innerHTML = state.history.map(h => `
+                    <tr class="hover:bg-white/[0.02] transition-colors">
+                        <td class="p-5 text-xs text-slate-500">${h.date}</td>
+                        <td class="p-5 font-bold text-slate-200">${escapeHtml(h.name)}</td>
+                        <td class="p-5 text-right font-mono text-xs text-slate-400">${h.stats}</td>
+                        <td class="p-5 text-right font-bold text-neon-blue">R$ ${(typeof h.price === 'number' ? h.price : parseFloat(h.price)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+                        <td class="p-5 text-center"><button onclick="removeHistory(${h.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button></td>
+                    </tr>
+                `).join('');
+            }
             lucide.createIcons();
         }
-        function updateUptimeDisplay(){ let h=Math.floor(state.totalHours), m=Math.round((state.totalHours-h)*60); document.getElementById('total-machine-time').innerText=`${h}h ${m}m`; }
-        function resetOdometer(){ if(confirm("Zerar apenas o tempo de uso da máquina?")){ state.totalHours=0; saveAll(); updateUptimeDisplay(); } }
+        
+        function updateUptimeDisplay(){ 
+            let h = Math.floor(state.totalHours), m = Math.round((state.totalHours - h) * 60); 
+            document.getElementById('total-machine-time').innerText = `${h}h ${m}m`; 
+        }
+        
+        function resetOdometer(){ 
+            if(confirm("Zerar apenas o tempo de uso da máquina?")){ 
+                state.totalHours = 0; 
+                saveAll(); 
+                updateUptimeDisplay(); 
+                showToast("Odômetro zerado");
+            } 
+        }
         
         // ==================== CONFIGURAÇÕES ====================
         function populateSelects(){
-            let stateSel=document.getElementById('stateSelect');
-            stateSel.innerHTML='<option value="">Selecione seu estado...</option>';
-            for(let uf in electricityCostsByState) stateSel.innerHTML+=`<option value="${uf}">${uf} (R$ ${electricityCostsByState[uf].toFixed(2)})</option>`;
-            let currentKwh=parseFloat(state.settings.kwh);
-            for(let uf in electricityCostsByState) if(Math.abs(electricityCostsByState[uf]-currentKwh)<0.01) stateSel.value=uf;
+            let stateSel = document.getElementById('stateSelect');
+            stateSel.innerHTML = '<option value="">Selecione seu estado...</option>';
+            for(let uf in electricityCostsByState) 
+                stateSel.innerHTML += `<option value="${uf}">${uf} (R$ ${electricityCostsByState[uf].toFixed(2)})</option>`;
+            let currentKwh = parseFloat(state.settings.kwh);
+            for(let uf in electricityCostsByState) 
+                if(Math.abs(electricityCostsByState[uf] - currentKwh) < 0.01) stateSel.value = uf;
             
-            let printerSel=document.getElementById('printerSelect');
-            printerSel.innerHTML='<option value="">Selecione sua impressora...</option>';
-            for(let name in commonPrinters) printerSel.innerHTML+=`<option value="${name}">${name} (${commonPrinters[name].wattage}W)</option>`;
-            let currWatts=parseFloat(state.settings.watts), currPrice=parseFloat(state.settings.printerPrice);
-            for(let name in commonPrinters) if(Math.abs(commonPrinters[name].wattage-currWatts)<10 && Math.abs(commonPrinters[name].price-currPrice)<100) printerSel.value=name;
+            let printerSel = document.getElementById('printerSelect');
+            printerSel.innerHTML = '<option value="">Selecione sua impressora...</option>';
+            for(let name in commonPrinters) 
+                printerSel.innerHTML += `<option value="${name}">${name} (${commonPrinters[name].wattage}W)</option>`;
+            let currWatts = parseFloat(state.settings.watts), currPrice = parseFloat(state.settings.printerPrice);
+            for(let name in commonPrinters) 
+                if(Math.abs(commonPrinters[name].wattage - currWatts) < 10 && Math.abs(commonPrinters[name].price - currPrice) < 100) 
+                    printerSel.value = name;
         }
-        function applyStateCost(){ let uf=document.getElementById('stateSelect').value; if(uf && electricityCostsByState[uf]){ document.getElementById('set-kwh').value=electricityCostsByState[uf]; saveSettings(); } }
-        function applyPrinterData(){ let pr=document.getElementById('printerSelect').value; if(pr && commonPrinters[pr]){ document.getElementById('set-watts').value=commonPrinters[pr].wattage; document.getElementById('set-printer-price').value=commonPrinters[pr].price; saveSettings(); } }
+        
+        function applyStateCost(){ 
+            let uf = document.getElementById('stateSelect').value; 
+            if(uf && electricityCostsByState[uf]){ 
+                document.getElementById('set-kwh').value = electricityCostsByState[uf]; 
+                saveSettings(); 
+                showToast(`Custo kWh atualizado para R$ ${electricityCostsByState[uf].toFixed(2)}`);
+            } 
+        }
+        
+        function applyPrinterData(){ 
+            let pr = document.getElementById('printerSelect').value; 
+            if(pr && commonPrinters[pr]){ 
+                document.getElementById('set-watts').value = commonPrinters[pr].wattage; 
+                document.getElementById('set-printer-price').value = commonPrinters[pr].price; 
+                saveSettings(); 
+                showToast(`Dados da ${pr} aplicados`);
+            } 
+        }
         
         function saveSettings(){
-            state.settings={ laborRate:parseFloat(document.getElementById('set-labor-rate').value)||0, kwh:parseFloat(document.getElementById('set-kwh').value)||0, watts:parseFloat(document.getElementById('set-watts').value)||0, printerLife:parseFloat(document.getElementById('set-life').value)||5000, printerPrice:parseFloat(document.getElementById('set-printer-price').value)||0 };
-            localStorage.setItem('3dcalc_settings_v5',JSON.stringify(state.settings));
+            state.settings = { 
+                laborRate: parseFloat(document.getElementById('set-labor-rate').value) || 0,
+                kwh: parseFloat(document.getElementById('set-kwh').value) || 0,
+                watts: parseFloat(document.getElementById('set-watts').value) || 0,
+                printerLife: parseFloat(document.getElementById('set-life').value) || 5000,
+                printerPrice: parseFloat(document.getElementById('set-printer-price').value) || 0
+            };
+            localStorage.setItem('3dcalc_settings_v5', JSON.stringify(state.settings));
             calculate();
         }
+        
         function loadSettings(){
-            let s=state.settings;
-            document.getElementById('set-labor-rate').value=s.laborRate;
-            document.getElementById('set-kwh').value=s.kwh;
-            document.getElementById('set-watts').value=s.watts;
-            document.getElementById('set-life').value=s.printerLife;
-            document.getElementById('set-printer-price').value=s.printerPrice||2000;
+            let s = state.settings;
+            document.getElementById('set-labor-rate').value = s.laborRate;
+            document.getElementById('set-kwh').value = s.kwh;
+            document.getElementById('set-watts').value = s.watts;
+            document.getElementById('set-life').value = s.printerLife;
+            document.getElementById('set-printer-price').value = s.printerPrice || 2000;
         }
+        
         function updateFilamentSelect(){
-            let sel=document.getElementById('in-filament');
-            sel.innerHTML=state.stock.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')||'<option disabled>Cadastre no estoque</option>';
+            let sel = document.getElementById('in-filament');
+            if(state.stock.length === 0){
+                sel.innerHTML = '<option disabled>Cadastre no estoque</option>';
+            } else {
+                sel.innerHTML = state.stock.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+            }
             calculate();
         }
-        function saveAndRefresh(){ saveAll(); updateStockList(); updateFilamentSelect(); updateHistoryTable(); updateUptimeDisplay(); calculate(); }
-        function showTab(tab){ document.querySelectorAll('section').forEach(s=>s.classList.add('hidden')); document.getElementById(`tab-${tab}`).classList.remove('hidden'); document.querySelectorAll('nav button').forEach(b=>b.classList.remove('tab-active')); document.getElementById(`btn-${tab}`).classList.add('tab-active'); lucide.createIcons(); }
-        function toggleModal(id){ document.getElementById(id).classList.toggle('hidden'); }
+        
+        function showTab(tab){ 
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); 
+            document.getElementById(`tab-${tab}`).classList.remove('hidden'); 
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active')); 
+            document.getElementById(`btn-${tab}`).classList.add('tab-active'); 
+            lucide.createIcons(); 
+        }
+        
+        function toggleModal(id){ 
+            document.getElementById(id).classList.toggle('hidden'); 
+            if(id === 'modal-stock' && !document.getElementById(id).classList.contains('hidden')){
+                // Reset material buttons ao abrir modal
+                initMaterialButtons();
+            }
+        }
         
         // ==================== BACKUP ====================
-        function exportData(){ let blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`3dcalc_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
-        function importData(e){ let file=e.target.files[0]; if(!file) return; let reader=new FileReader(); reader.onload=ev=>{ try{ let imp=JSON.parse(ev.target.result); if(confirm("Substituir dados atuais?")){ state=imp; if(!state.stock) state.stock=[]; if(!state.history) state.history=[]; if(typeof state.totalHours!='number') state.totalHours=0; if(!state.settings) state.settings={kwh:0.85,watts:150,printerPrice:2000,printerLife:5000,laborRate:30}; saveAll(); location.reload(); } }catch(e){ alert("Arquivo inválido"); } }; reader.readAsText(file); }
+        function exportData(){ 
+            let blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"}); 
+            let a = document.createElement('a'); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = `3dcalc_backup_${new Date().toISOString().slice(0,10)}.json`; 
+            a.click(); 
+            showToast("Backup exportado");
+        }
         
-        document.addEventListener('DOMContentLoaded',()=>{
-            loadSettings(); populateSelects(); updateStockList(); updateFilamentSelect(); updateHistoryTable(); updateUptimeDisplay(); lucide.createIcons(); calculate();
+        function importData(e){ 
+            let file = e.target.files[0]; 
+            if(!file) return; 
+            let reader = new FileReader(); 
+            reader.onload = ev => { 
+                try{ 
+                    let imp = JSON.parse(ev.target.result); 
+                    if(confirm("Substituir dados atuais?")){ 
+                        state = imp; 
+                        if(!state.stock) state.stock = []; 
+                        if(!state.history) state.history = []; 
+                        if(typeof state.totalHours != 'number') state.totalHours = 0; 
+                        if(!state.settings) state.settings = {kwh:0.85,watts:150,printerPrice:2000,printerLife:5000,laborRate:30}; 
+                        saveAll(); 
+                        location.reload(); 
+                    } 
+                } catch(err){ showToast("Arquivo inválido", true); } 
+            }; 
+            reader.readAsText(file); 
+        }
+        
+        // ==================== INICIALIZAÇÃO ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings(); 
+            populateSelects(); 
+            updateStockList(); 
+            updateFilamentSelect(); 
+            updateHistoryTable(); 
+            updateUptimeDisplay(); 
+            lucide.createIcons(); 
+            calculate();
+            initMaterialButtons();
         });
     </script>
 </body>
