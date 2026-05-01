@@ -1,738 +1,1975 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="light">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>3D PrintMaster - Precificação Inteligente</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Outfit', 'sans-serif'], tech: ['Rajdhani', 'sans-serif'] },
-                    colors: {
-                        dark: { 950: '#020617', 900: '#0f172a', 800: '#1e293b' },
-                        neon: { blue: '#06b6d4', pink: '#ec4899', green: '#10b981' }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #020617; background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%); min-height: 100vh; }
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
-        .tab-active { border-bottom: 2px solid #06b6d4; color: #06b6d4; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        input[type="file"]::file-selector-button { display: none; }
-        .card-glow:hover { box-shadow: 0 0 20px rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.3); }
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(16, 185, 129, 0.2);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(16, 185, 129, 0.5);
-            color: #10b981;
-            padding: 12px 24px;
-            border-radius: 40px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            z-index: 9999;
-            font-family: 'Rajdhani', monospace;
-            letter-spacing: 1px;
-            box-shadow: 0 0 20px rgba(16,185,129,0.3);
-            white-space: nowrap;
-            animation: fadeInOut 2s ease-in-out forwards;
-        }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); visibility: hidden; }
-        }
-        .material-btn {
-            transition: all 0.2s;
-        }
-        .material-btn.active {
-            background-color: #10b981;
-            color: #020617;
-            border-color: #10b981;
-            box-shadow: 0 0 10px rgba(16,185,129,0.5);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#3b82f6" />
+  <title>Calc3D – Precificação Inteligente</title>
+
+  <!-- Fonte Premium: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+  <style>
+    :root {
+      --bs-primary: #8b5cf6;
+      /* Violet */
+      --bs-primary-dark: #6d28d9;
+      --bs-success: #10b981;
+      --bs-danger: #f43f5e;
+      /* Rose */
+      --bg-body: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.75);
+      /* Mais transparente para o glass */
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: rgba(203, 213, 225, 0.6);
+      --glass-bg: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --accent-glow: rgba(139, 92, 246, 0.2);
+    }
+
+    [data-bs-theme="dark"] {
+      --bs-primary: #a78bfa;
+      --bs-primary-dark: #8b5cf6;
+      --bs-success: #34d399;
+      --bs-danger: #fb7185;
+      --bg-body: #020617;
+      /* Deep dark (slate-950) */
+      --card-bg: rgba(15, 23, 42, 0.6);
+      /* Glassy dark */
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(51, 65, 85, 0.5);
+      --glass-bg: rgba(15, 23, 42, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --accent-glow: rgba(167, 139, 250, 0.15);
+    }
+
+    html {
+      font-size: 14px;
+      scroll-behavior: smooth;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(139, 92, 246, 0.3);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(139, 92, 246, 0.6);
+    }
+
+    body {
+      background-color: var(--bg-body);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text-main);
+      transition: background-color 0.5s ease, color 0.5s ease;
+      letter-spacing: -0.01em;
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Blobs */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      width: 40vw;
+      height: 40vw;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+      opacity: 0.5;
+      animation: floatBlobs 20s infinite alternate ease-in-out;
+      pointer-events: none;
+    }
+
+    body::before {
+      background: radial-gradient(circle, var(--bs-primary) 0%, transparent 70%);
+      top: -10vw;
+      left: -10vw;
+    }
+
+    body::after {
+      background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+      bottom: -10vw;
+      right: -10vw;
+      animation-delay: -10s;
+    }
+
+    [data-bs-theme="dark"] body::before,
+    [data-bs-theme="dark"] body::after {
+      opacity: 0.15;
+      /* Subtler in dark mode */
+    }
+
+    @keyframes floatBlobs {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      50% {
+        transform: translate(5vw, 5vw) scale(1.1);
+      }
+
+      100% {
+        transform: translate(-5vw, 10vw) scale(0.9);
+      }
+    }
+
+    /* Navbar com Glassmorphism */
+    .navbar {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      transition: all 0.3s ease;
+      z-index: 1020;
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+    }
+
+    .navbar-brand {
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--bs-primary) !important;
+      letter-spacing: -0.03em;
+    }
+
+    /* Estilo das Abas (Tabs) */
+    .nav-pills .nav-link {
+      color: var(--text-muted);
+      font-weight: 600;
+      border-radius: 0.85rem;
+      margin-right: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-pills .nav-link:hover {
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--bs-primary);
+    }
+
+    .nav-pills .nav-link.active {
+      background: linear-gradient(135deg, var(--bs-primary), #06b6d4);
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(139, 92, 246, 0.3);
+      border: none;
+    }
+
+    /* Cartões Modernos com Glassmorphism */
+    .dashboard-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 1.25rem;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--glass-border);
+      height: 100%;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 35px -5px rgba(139, 92, 246, 0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.05);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Inputs & Controlos */
+    .form-label {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+      transition: color 0.3s;
+    }
+
+    .form-control,
+    .form-select {
+      background-color: rgba(255, 255, 255, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-main);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+      background-color: rgba(255, 255, 255, 0.9);
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+
+    [data-bs-theme="dark"] .form-control,
+    [data-bs-theme="dark"] .form-select {
+      background-color: rgba(0, 0, 0, 0.2) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    [data-bs-theme="dark"] .form-control:focus,
+    [data-bs-theme="dark"] .form-select:focus {
+      background-color: rgba(0, 0, 0, 0.4) !important;
+      border-color: var(--bs-primary) !important;
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+
+    [data-bs-theme="dark"] select option {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    [data-bs-theme="dark"] textarea.form-control {
+      background-color: rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .btn-quick {
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.3rem 0.8rem;
+      margin-right: 0.3rem;
+      margin-bottom: 0.4rem;
+      transition: all 0.2s;
+      border-color: var(--border-color);
+      color: var(--text-muted);
+      background: transparent;
+    }
+
+    .btn-quick:hover {
+      background: var(--accent-glow);
+      color: var(--bs-primary);
+      border-color: var(--bs-primary);
+      transform: translateY(-2px);
+    }
+
+    .btn-quick:active {
+      transform: scale(0.95);
+    }
+
+    /* Botão Principal */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--bs-primary), #06b6d4);
+      border: none;
+      color: #fff;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #06b6d4, var(--bs-primary));
+      z-index: -1;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4) !important;
+      color: #fff;
+    }
+
+    .btn-primary:hover::before {
+      opacity: 1;
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px) scale(0.98);
+    }
+
+    /* Sliders Personalizados */
+    .form-range {
+      height: 8px;
+      border-radius: 1rem;
+      background: var(--border-color);
+    }
+
+    .form-range::-webkit-slider-thumb {
+      background: linear-gradient(135deg, var(--bs-primary), #06b6d4);
+      box-shadow: 0 0 0 3px var(--card-bg), 0 2px 5px rgba(0, 0, 0, 0.2);
+      width: 20px;
+      height: 20px;
+      transition: transform 0.1s;
+    }
+
+    .form-range::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    [data-bs-theme="dark"] .form-range::-webkit-slider-thumb {
+      box-shadow: 0 0 0 3px var(--card-bg);
+    }
+
+    .slider-risk::-webkit-slider-thumb {
+      background: linear-gradient(135deg, var(--bs-danger), #fda4af);
+    }
+
+    .slider-profit::-webkit-slider-thumb {
+      background: linear-gradient(135deg, var(--bs-success), #6ee7b7);
+    }
+
+    /* Caixa de Resultados com Efeito Holográfico */
+    .result-box {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1));
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    [data-bs-theme="dark"] .result-box {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.1));
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Efeito de brilho animado no topo da caixa */
+    .result-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      right: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--bs-primary), #06b6d4, transparent);
+      animation: scanline 3s linear infinite;
+    }
+
+    @keyframes scanline {
+      0% {
+        left: -100%;
+        right: 100%;
+      }
+
+      50% {
+        left: 0;
+        right: 0;
+      }
+
+      100% {
+        left: 100%;
+        right: -100%;
+      }
+    }
+
+    .result-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin: 0.5rem 0;
+      background: linear-gradient(135deg, var(--bs-primary), #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2));
+    }
+
+    .progress-custom {
+      height: 1rem;
+      border-radius: 1rem;
+      margin-top: 1rem;
+      background-color: var(--border-color);
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar {
+      border-radius: 1rem;
+      position: relative;
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bg-danger {
+      background: linear-gradient(90deg, #f43f5e, #fb7185) !important;
+    }
+
+    .bg-warning {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+    }
+
+    .bg-info {
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8) !important;
+    }
+
+    .bg-secondary {
+      background: linear-gradient(90deg, #64748b, #94a3b8) !important;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      cursor: pointer;
+      padding: 0;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .theme-toggle:hover {
+      transform: rotate(15deg) scale(1.1);
+      box-shadow: 0 6px 15px rgba(139, 92, 246, 0.2);
+      border-color: var(--bs-primary);
+    }
+
+    /* Badge de Estado */
+    .badge-status {
+      padding: 0.6rem 1rem;
+      border-radius: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(5px);
+    }
+
+    .top-status-pill {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--text-muted) !important;
+      background: rgba(255, 255, 255, 0.45) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+    }
+
+    .top-status-pill i {
+      font-size: 0.95rem;
+      color: var(--bs-primary);
+    }
+
+    .top-status-pill.status-synced {
+      color: #047857 !important;
+      background: rgba(16, 185, 129, 0.08) !important;
+      border-color: rgba(16, 185, 129, 0.22) !important;
+    }
+
+    .top-status-pill.status-synced i {
+      color: #059669;
+    }
+
+    .top-status-pill.status-error {
+      color: #be123c !important;
+      background: rgba(244, 63, 94, 0.08) !important;
+      border-color: rgba(244, 63, 94, 0.22) !important;
+    }
+
+    .top-status-pill.status-error i {
+      color: #e11d48;
+    }
+
+    .top-status-pill.status-muted {
+      color: var(--text-muted) !important;
+      background: rgba(148, 163, 184, 0.1) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    .top-revenue-pill {
+      color: var(--text-main) !important;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(6, 182, 212, 0.08)) !important;
+      border-color: rgba(139, 92, 246, 0.22) !important;
+    }
+
+    .top-revenue-pill strong,
+    .top-revenue-pill #fatTotal {
+      color: var(--bs-primary);
+      font-weight: 800;
+    }
+
+    [data-bs-theme="dark"] .top-status-pill {
+      background: rgba(15, 23, 42, 0.55) !important;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+    }
+
+    /* Listas (Estoque/Histórico) */
+    .list-group-item {
+      background: transparent;
+      border-color: var(--border-color);
+      color: var(--text-main);
+      padding: 1.2rem;
+      transition: all 0.3s ease;
+      border-radius: 0.75rem !important;
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .list-group-item:hover {
+      background: var(--accent-glow);
+      border-color: var(--bs-primary);
+      transform: translateX(5px);
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Calc button pulse */
+    @keyframes pulseBtn {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.6)
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(139, 92, 246, 0)
+      }
+    }
+
+    .btn-calc-pulse {
+      animation: pulseBtn 2.5s ease-in-out infinite;
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 4rem 1rem;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 3.5rem;
+      opacity: 0.4;
+      display: block;
+      margin-bottom: 1rem;
+      color: var(--bs-primary);
+    }
+
+    /* Navbar brand gradient text */
+    .navbar-brand span {
+      background: linear-gradient(135deg, var(--bs-primary), #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    /* Toast Notifications */
+    #toastContainer {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+      pointer-events: none;
+    }
+
+    .calc-toast {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: 1rem 1.25rem;
+      border-radius: 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #fff;
+      min-width: 240px;
+      max-width: 340px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+      pointer-events: auto;
+      transform: translateX(120%);
+      opacity: 0;
+      transition: transform .4s cubic-bezier(.16, 1, .3, 1), opacity .4s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .calc-toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .calc-toast.toast-success {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+
+    .calc-toast.toast-info {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(6, 182, 212, 0.9));
+      border: 1px solid rgba(139, 92, 246, 0.5);
+    }
+
+    .calc-toast.toast-warning {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
+      border: 1px solid rgba(245, 158, 11, 0.5);
+    }
+
+    .calc-toast.toast-error {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.9), rgba(225, 29, 72, 0.9));
+      border: 1px solid rgba(244, 63, 94, 0.5);
+    }
+
+    .calc-toast i {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-card {
+        padding: 1.25rem;
+        border-radius: 1rem;
+      }
+
+      .nav-pills {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.75rem;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .nav-pills::-webkit-scrollbar {
+        display: none;
+      }
+
+      .nav-pills .nav-link {
+        white-space: nowrap;
+      }
+
+      .result-value {
+        font-size: 2.25rem;
+      }
+    }
+
+    @media (min-width: 992px) {
+      #calc>.row {
+        align-items: flex-start;
+      }
+
+      #calc>.row>.calc-input-column {
+        width: 66.66666667%;
+      }
+
+      #calc>.row>.calc-summary-column {
+        width: 33.33333333%;
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      #calc>.row>.calc-input-column,
+      #calc>.row>.calc-summary-column {
+        width: 100%;
+      }
+
+      #calc .sticky-top {
+        position: static !important;
+      }
+    }
+  </style>
 </head>
-<body class="text-slate-200">
 
-    <nav class="sticky top-0 z-50 glass border-b border-white/5 mb-6">
-        <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-neon-blue rounded-lg flex items-center justify-center shadow-[0_0_15px_#06b6d4]">
-                    <i data-lucide="box" class="text-dark-950 w-5 h-5"></i>
-                </div>
-                <span class="font-tech text-xl font-bold tracking-wider">3D<span class="text-neon-blue">CALC</span></span>
-            </div>
-            <div class="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar font-tech uppercase tracking-widest">
-                <button onclick="showTab('calc')" id="btn-calc" class="tab-active py-2 px-1 text-sm font-semibold transition-all">CALC</button>
-                <button onclick="showTab('stock')" id="btn-stock" class="py-2 px-1 text-sm font-semibold opacity-60 hover:opacity-100 transition-all">ESTOQUE</button>
-                <button onclick="showTab('history')" id="btn-history" class="py-2 px-1 text-sm font-semibold opacity-60 hover:opacity-100 transition-all">HISTÓRICO</button>
-                <button onclick="showTab('settings')" id="btn-settings" class="py-2 px-1 text-sm font-semibold opacity-60 hover:opacity-100 transition-all">AJUSTES</button>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <main class="max-w-6xl mx-auto px-4 pb-20">
-        
-        <!-- CALCULADORA -->
-        <section id="tab-calc" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-5 space-y-6">
-                <div class="glass p-6 rounded-2xl border-white/5">
-                    <h2 class="text-neon-blue font-tech text-lg mb-4 flex items-center gap-2 uppercase tracking-widest">
-                        <i data-lucide="zap" class="w-4 h-4"></i> Parâmetros do Projeto
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Identificação</label>
-                            <input type="text" id="in-name" placeholder="Nome do Projeto ou Cliente" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl focus:border-neon-blue outline-none transition-all">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Peso Final (g)</label>
-                                <input type="number" id="in-weight" oninput="calculate()" placeholder="0" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl focus:border-neon-blue outline-none font-mono">
-                            </div>
-                            <div>
-                                <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Tempo (HH:MM)</label>
-                                <input type="text" id="in-time" oninput="calculate()" placeholder="02:30" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl focus:border-neon-blue outline-none font-mono">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Pós-Processamento (Minutos)</label>
-                            <input type="number" id="in-labor-mins" oninput="calculate()" placeholder="Tempo de lixa, pintura..." class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue">
-                        </div>
-                        <div>
-                            <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Filamento Selecionado</label>
-                            <select id="in-filament" onchange="calculate()" class="w-full bg-dark-900/60 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue"></select>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-[10px] uppercase text-slate-500 font-bold ml-1">Margem de Lucro</label>
-                                <span id="val-margin" class="text-neon-blue font-bold font-mono">100%</span>
-                            </div>
-                            <input type="range" id="in-margin" min="0" max="500" value="100" oninput="calculate()" class="w-full h-2 bg-dark-800 rounded-lg appearance-none cursor-pointer accent-neon-blue">
-                            <div class="grid grid-cols-3 gap-2 mt-2 text-[10px] font-bold uppercase tracking-wider font-tech">
-                                <button onclick="setMargin(100)" class="bg-dark-900/50 hover:bg-white/10 p-2 rounded-lg border border-white/5 text-slate-400 hover:text-white transition-all">Conservador (100%)</button>
-                                <button onclick="setMargin(250)" class="bg-dark-900/50 hover:bg-white/10 p-2 rounded-lg border border-white/5 text-slate-400 hover:text-white transition-all">Normal (250%)</button>
-                                <button onclick="setMargin(500)" class="bg-dark-900/50 hover:bg-white/10 p-2 rounded-lg border border-white/5 text-slate-400 hover:text-white transition-all">Agressivo (500%)</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button onclick="saveToHistory()" class="w-full bg-neon-blue hover:bg-cyan-400 text-dark-950 font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 uppercase tracking-widest font-tech transition-all">
-                    <i data-lucide="save" class="w-5 h-5"></i> Salvar e Registrar Tempo
-                </button>
-            </div>
-
-            <div class="lg:col-span-7 space-y-6">
-                <div class="glass p-8 rounded-3xl border-neon-blue/20 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-8 opacity-5">
-                        <i data-lucide="trending-up" class="w-32 h-32"></i>
-                    </div>
-                    <p class="text-slate-400 font-tech uppercase tracking-widest text-sm mb-2">Preço de Venda Sugerido</p>
-                    <div class="text-7xl font-bold font-tech tracking-tighter text-white mb-8">
-                        R$ <span id="res-total">0,00</span>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <div class="bg-dark-900/50 p-4 rounded-2xl border border-white/5">
-                            <p class="text-[9px] text-slate-500 uppercase font-bold mb-1">Material</p>
-                            <p class="text-xl font-mono">R$ <span id="res-material">0,00</span></p>
-                        </div>
-                        <div class="bg-dark-900/50 p-4 rounded-2xl border border-white/5">
-                            <p class="text-[9px] text-slate-500 uppercase font-bold mb-1">Máquina</p>
-                            <p class="text-xl font-mono">R$ <span id="res-machine">0,00</span></p>
-                        </div>
-                        <div class="bg-dark-900/50 p-4 rounded-2xl border border-white/5 text-yellow-500">
-                            <p class="text-[9px] uppercase font-bold mb-1 text-slate-500">Manual</p>
-                            <p class="text-xl font-mono font-bold">R$ <span id="res-labor">0,00</span></p>
-                        </div>
-                        <div class="bg-dark-900/50 p-4 rounded-2xl border border-white/5 text-neon-green">
-                            <p class="text-[9px] uppercase font-bold mb-1 text-slate-500">Lucro</p>
-                            <p class="text-xl font-mono font-bold">R$ <span id="res-profit">0,00</span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass p-6 rounded-2xl">
-                    <h3 class="text-slate-500 font-tech uppercase tracking-widest text-xs mb-4">Composição Detalhada</h3>
-                    <div id="price-breakdown" class="space-y-3 text-sm"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ESTOQUE -->
-        <section id="tab-stock" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-tech font-bold uppercase tracking-wider text-neon-green">Meus Filamentos</h2>
-                <button onclick="toggleModal('modal-stock')" class="bg-neon-green text-dark-950 px-6 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-400 transition-all">
-                    <i data-lucide="plus" class="w-4 h-4"></i> CADASTRAR ROLO
-                </button>
-            </div>
-            <div id="stock-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </section>
-
-        <!-- HISTÓRICO -->
-        <section id="tab-history" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-tech font-bold uppercase tracking-wider text-neon-blue">Histórico</h2>
-                <button onclick="clearHistory()" class="text-red-400 text-xs font-bold uppercase hover:underline p-2">Excluir Tudo</button>
-            </div>
-            <div class="glass rounded-3xl overflow-hidden border-white/5">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-dark-800/50 text-slate-400 uppercase text-[10px] tracking-widest font-bold">
-                        <tr><th class="p-5">Data</th><th class="p-5">Projeto</th><th class="p-5 text-right">Peso/Tempo</th><th class="p-5 text-right">Preço</th><th class="p-5 text-center">Ações</th></tr>
-                    </thead>
-                    <tbody id="history-table" class="divide-y divide-white/5"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- AJUSTES -->
-        <section id="tab-settings" class="hidden max-w-4xl mx-auto space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass p-8 rounded-3xl border-neon-blue/30 relative overflow-hidden group">
-                    <h2 class="text-slate-400 font-tech text-xs uppercase tracking-widest mb-2 flex justify-between items-center">
-                        Tempo de Voo da Máquina
-                        <button onclick="resetOdometer()" class="text-slate-600 hover:text-red-400 transition-colors" title="Zerar apenas o tempo (Manutenção)">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                        </button>
-                    </h2>
-                    <div class="text-6xl font-bold font-tech text-neon-blue tracking-tighter" id="total-machine-time">0h 0m</div>
-                    <p class="text-[10px] text-slate-500 mt-2 uppercase tracking-widest">Odômetro total de impressões salvas</p>
-                </div>
-                <div class="glass p-8 rounded-3xl border-yellow-500/30 flex flex-col justify-center">
-                    <label class="text-[10px] uppercase text-slate-500 font-bold block mb-2">Valor da Sua Hora (R$)</label>
-                    <input type="number" id="set-labor-rate" value="30.00" oninput="saveSettings()" class="text-3xl font-tech font-bold bg-transparent border-b border-white/10 w-full outline-none focus:border-yellow-500 text-yellow-500">
-                </div>
-            </div>
-
-            <div class="glass p-8 rounded-3xl border-pink-500/30">
-                <h2 class="text-xl font-tech font-bold uppercase tracking-widest text-pink-500 mb-6 flex items-center gap-3">
-                    <i data-lucide="database" class="w-6 h-6"></i> Banco de Dados Local
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-dark-900/50 p-6 rounded-2xl border border-white/5">
-                        <p class="text-sm text-slate-400 mb-4">Exportar Backup: Salve um arquivo com todo seu histórico e estoque.</p>
-                        <button onclick="exportData()" class="w-full bg-white/5 hover:bg-white/10 py-3 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-center gap-2">
-                            <i data-lucide="download" class="w-4 h-4"></i> Baixar Arquivo JSON
-                        </button>
-                    </div>
-                    <div class="bg-dark-900/50 p-6 rounded-2xl border border-white/5">
-                        <p class="text-sm text-slate-400 mb-4">Restaurar: Carregue um arquivo de backup feito anteriormente.</p>
-                        <label class="w-full bg-pink-500/10 hover:bg-pink-500/20 text-pink-500 py-3 rounded-xl text-xs font-bold uppercase transition-all flex items-center justify-center gap-2 cursor-pointer border border-pink-500/20">
-                            <i data-lucide="upload" class="w-4 h-4"></i> Importar Backup
-                            <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass p-8 rounded-3xl space-y-6">
-                <h2 class="text-xl font-tech font-bold uppercase tracking-widest text-slate-400">Preencher Custos Automaticamente</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="text-[10px] uppercase text-neon-blue font-bold block mb-1">Por Estado (kWh)</label>
-                        <select id="stateSelect" onchange="applyStateCost()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue text-sm">
-                            <option value="">Selecione seu estado...</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase text-neon-blue font-bold block mb-1">Por Impressora</label>
-                        <select id="printerSelect" onchange="applyPrinterData()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue text-sm">
-                            <option value="">Selecione sua impressora...</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass p-8 rounded-3xl border-white/5 space-y-6">
-                <h2 class="text-xl font-tech font-bold uppercase tracking-widest text-slate-400">Parâmetros de Custo Máquina</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div>
-                        <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Preço Máquina (R$)</label>
-                        <input type="number" id="set-printer-price" value="2000" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Vida Útil (Horas)</label>
-                        <input type="number" id="set-life" value="5000" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Custo kWh (R$)</label>
-                        <input type="number" id="set-kwh" step="0.01" value="0.85" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue font-mono">
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Consumo (Watts)</label>
-                        <input type="number" id="set-watts" value="150" oninput="saveSettings()" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-blue font-mono">
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- NOVO MODAL ESTOQUE (layout igual à imagem) -->
-    <div id="modal-stock" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden">
-        <div class="glass w-full max-w-md p-6 rounded-3xl border-neon-green/30">
-            <h3 class="text-2xl font-tech font-bold uppercase mb-5 text-neon-green tracking-widest text-center">Novo Carretel</h3>
-            <div class="space-y-5">
-                <!-- Marca -->
-                <div>
-                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">MARCA</label>
-                    <input type="text" id="stk-brand" placeholder="Ex: Creality, Bambu, Voolt..." class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm">
-                </div>
-                <!-- Cor / Descrição -->
-                <div>
-                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">COR / DESCRIÇÃO</label>
-                    <input type="text" id="stk-color" placeholder="Ex: Azul Naval, Transparente, Bronzado" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm">
-                </div>
-                <!-- Peso Inicial (g) -->
-                <div>
-                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">PESO INICIAL (G)</label>
-                    <input type="number" id="stk-weight" value="1000" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm font-mono">
-                </div>
-                <!-- Preço Pago (R$) -->
-                <div>
-                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-1">PREÇO PAGO (R$)</label>
-                    <input type="number" id="stk-price" placeholder="0.00" step="0.01" class="w-full bg-dark-900 border border-white/10 p-3 rounded-xl outline-none focus:border-neon-green text-sm font-mono">
-                </div>
-                <!-- MATERIAL (botões) -->
-                <div>
-                    <label class="text-[11px] uppercase text-slate-400 font-bold block mb-2">MATERIAL</label>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" data-material="PLA" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">PLA</button>
-                        <button type="button" data-material="PETG" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">PETG</button>
-                        <button type="button" data-material="ABS" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">ABS</button>
-                        <button type="button" data-material="TPU" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">TPU</button>
-                        <button type="button" data-material="ASA" class="material-btn bg-dark-900 border border-white/10 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:border-neon-green transition-all">ASA</button>
-                    </div>
-                    <input type="hidden" id="stk-material" value="PLA">
-                </div>
-                <div class="flex gap-4 pt-4">
-                    <button onclick="toggleModal('modal-stock')" class="flex-1 py-3 text-xs font-bold uppercase opacity-60 hover:opacity-100 transition-all">CANCELAR</button>
-                    <button onclick="addStock()" class="flex-1 bg-neon-green text-dark-950 py-3 rounded-xl font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:bg-emerald-400 transition-all">SALVAR CARRETEL</button>
-                </div>
-            </div>
-        </div>
+  <nav class="navbar navbar-expand-lg sticky-top mb-3 py-2">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <i class="bi bi-layers-half text-primary fs-3"></i>
+        <span>Calc3D</span>
+      </a>
+      <div class="d-flex align-items-center gap-2 gap-md-3">
+        <span class="badge badge-status top-status-pill status-muted"
+          id="cloudStatusBadge"><i class="bi bi-arrow-repeat"></i> <span class="d-none d-sm-inline">A ligar
+            Nuvem...</span></span>
+        <span class="badge badge-status top-status-pill top-revenue-pill"><i
+            class="bi bi-wallet2"></i> <span class="d-none d-sm-inline">Fat. Total:</span> <strong>R$ <span
+            id="fatTotal">0,00</span></strong></span>
+        <button class="theme-toggle shadow-sm" onclick="toggleTheme()" title="Alternar Tema Escuro/Claro">
+          <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+        </button>
+      </div>
     </div>
+  </nav>
 
-    <script>
-        // ==================== BASES DE DADOS ====================
-        const electricityCostsByState = {
-            "AC":1.42,"AL":1.32,"AP":1.19,"AM":1.27,"BA":1.38,"CE":1.33,"DF":1.24,"ES":1.30,"GO":1.26,
-            "MA":1.29,"MT":1.35,"MS":1.23,"MG":1.27,"PA":1.22,"PB":1.30,"PR":1.20,"PE":1.36,"PI":1.26,
-            "RJ":1.33,"RN":1.32,"RS":1.40,"RO":1.20,"RR":1.17,"SC":1.22,"SP":1.27,"SE":1.29,"TO":1.23
-        };
-        const commonPrinters = {
-            "Creality Ender 3/V2/Neo":{wattage:150,price:1800},"Creality CR-10":{wattage:300,price:3000},
-            "Creality Ender 3 V3":{wattage:200,price:2500},"Creality K1/K1C":{wattage:350,price:4000},
-            "Prusa i3 MK3S+":{wattage:180,price:6000},"Anycubic Mega":{wattage:200,price:1500},
-            "Artillery Sidewinder":{wattage:250,price:2200},"Bambu Lab P1P/X1C":{wattage:350,price:12000},
-            "Bambu Lab A1":{wattage:280,price:3800},"Voron 2.4":{wattage:500,price:8000}
-        };
+  <div class="container pb-4">
+    <!-- Menu de Abas Superior -->
+    <ul class="nav nav-pills mb-3 border-bottom pb-2" id="mainTabs"
+      style="border-color: var(--border-color) !important;">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#calc"><i
+            class="bi bi-calculator me-1"></i> CALCULAR</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#historico"><i
+            class="bi bi-clock-history me-1"></i> HISTÓRICO</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#estoque"><i
+            class="bi bi-box-seam me-1"></i> ESTOQUE</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#ajustes"
+          onclick="orc_init()"><i
+            class="bi bi-gear me-1"></i> DEFINIÇÕES & PDF</button></li>
+    </ul>
 
-        // ==================== ESTADO ====================
-        let state = {
-            stock: JSON.parse(localStorage.getItem('3dcalc_stock_v5')) || [],
-            history: JSON.parse(localStorage.getItem('3dcalc_history_v5')) || [],
-            totalHours: parseFloat(localStorage.getItem('3dcalc_total_hours_v5')) || 0,
-            settings: JSON.parse(localStorage.getItem('3dcalc_settings_v5')) || { kwh:0.85, watts:150, printerPrice:2000, printerLife:5000, laborRate:30 }
-        };
+    <div class="tab-content bg-transparent border-0 p-0 shadow-none">
 
-        // Inicializar seleção de material nos botões
-        function resetMaterialButtons() {
-            const btns = document.querySelectorAll('.material-btn');
-            btns.forEach(b => b.classList.remove('active'));
-            const plaBtn = document.querySelector('.material-btn[data-material="PLA"]');
-            if(plaBtn) plaBtn.classList.add('active');
-            document.getElementById('stk-material').value = 'PLA';
-        }
+      <!-- ABA CALC -->
+      <div class="tab-pane fade show active fade-in" id="calc">
+        <div class="row g-4">
 
-        function initMaterialButtons() {
-            const btns = document.querySelectorAll('.material-btn');
-            const hiddenMaterial = document.getElementById('stk-material');
-            btns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    hiddenMaterial.value = btn.getAttribute('data-material');
-                });
-            });
-            resetMaterialButtons();
-        }
+          <!-- Coluna Esquerda: Grid de Entradas -->
+          <div class="col-xl-8 calc-input-column">
+            <div class="row g-4">
 
-        // ==================== UTILITÁRIOS ====================
-        function escapeHtml(s){ let d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
-        function parseTime(t){ 
-            if(!t) return 0; 
-            if(t.includes(':')){ 
-                let [h,m]=t.split(':').map(Number); 
-                if(isNaN(h) || isNaN(m)) return null;
-                return (h||0)+(m||0)/60; 
-            } 
-            let v = parseFloat(t);
-            return isNaN(v) ? null : v;
-        }
-        function saveAll(){ 
-            localStorage.setItem('3dcalc_stock_v5', JSON.stringify(state.stock)); 
-            localStorage.setItem('3dcalc_history_v5', JSON.stringify(state.history)); 
-            localStorage.setItem('3dcalc_settings_v5', JSON.stringify(state.settings)); 
-            localStorage.setItem('3dcalc_total_hours_v5', state.totalHours); 
-        }
-        
-        function showToast(message, isError = false) {
-            const existingToast = document.querySelector('.toast');
-            if(existingToast) existingToast.remove();
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            if(isError) toast.style.borderColor = '#ef4444';
-            document.body.appendChild(toast);
-            setTimeout(() => { if(toast) toast.remove(); }, 2000);
-        }
-        
-        // ==================== CÁLCULO ====================
-        function calculate(){
-            let w=parseFloat(document.getElementById('in-weight').value)||0;
-            let timeInput=document.getElementById('in-time');
-            let parsedTime=parseTime(timeInput.value);
-            let time = parsedTime === null ? 0 : parsedTime;
-            if(parsedTime === null && timeInput.value !== ''){
-                timeInput.style.borderColor='#ef4444';
-            } else {
-                timeInput.style.borderColor='';
-            }
-            let laborMins=parseFloat(document.getElementById('in-labor-mins').value)||0;
-            let filId=parseInt(document.getElementById('in-filament').value);
-            let margin=parseFloat(document.getElementById('in-margin').value)/100;
-            document.getElementById('val-margin').innerText=(margin*100).toFixed(0)+'%';
-            let mat=0, fil=state.stock.find(s=>s.id===filId);
-            if(fil && fil.weight>0) mat=(fil.price/fil.weight)*w;
-            let s=state.settings;
-            let energy=((s.watts||0)/1000)*time*(s.kwh||0);
-            let depr=((s.printerPrice||0)/Math.max(1,s.printerLife||1))*time;
-            let labor=((s.laborRate||0)/60)*laborMins;
-            let total=mat+energy+depr+labor;
-            let profit=total*margin;
-            let final=total+profit;
-            document.getElementById('res-total').innerText=final.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-            document.getElementById('res-material').innerText=mat.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-            document.getElementById('res-machine').innerText=(energy+depr).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-            document.getElementById('res-labor').innerText=labor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-            document.getElementById('res-profit').innerText=profit.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-            document.getElementById('price-breakdown').innerHTML=`
-                <div class="flex justify-between items-center py-1 border-b border-white/5"><span>Filamento</span><span class="font-mono text-neon-blue">R$ ${mat.toFixed(2)}</span></div>
-                <div class="flex justify-between items-center py-1 border-b border-white/5"><span>Energia Elétrica</span><span class="font-mono">R$ ${energy.toFixed(2)}</span></div>
-                <div class="flex justify-between items-center py-1 border-b border-white/5"><span>Depreciação Máquina</span><span class="font-mono">R$ ${depr.toFixed(2)}</span></div>
-                <div class="flex justify-between items-center py-1 text-yellow-500"><span>Trabalho Manual</span><span class="font-mono font-bold">R$ ${labor.toFixed(2)}</span></div>
-                <div class="flex justify-between items-center py-1 text-neon-green pt-2 border-t border-white/10"><span>Margem de Lucro (${(margin*100).toFixed(0)}%)</span><span class="font-mono font-bold">R$ ${profit.toFixed(2)}</span></div>
-            `;
-        }
-        
-        function setMargin(v){ document.getElementById('in-margin').value=v; calculate(); }
-        
-        // ==================== ESTOQUE (COM OS NOVOS CAMPOS) ====================
-        function addStock(){
-            let brand = document.getElementById('stk-brand').value.trim();
-            let color = document.getElementById('stk-color').value.trim();
-            let weight = parseFloat(document.getElementById('stk-weight').value);
-            let price = parseFloat(document.getElementById('stk-price').value);
-            let material = document.getElementById('stk-material').value;
-            
-            if(!brand && !color){
-                showToast("Informe pelo menos a MARCA ou a COR", true);
-                return;
-            }
-            if(isNaN(weight) || weight <= 0){
-                showToast("Peso inválido (deve ser maior que 0)", true);
-                return;
-            }
-            if(isNaN(price) || price <= 0){
-                showToast("Preço inválido (deve ser maior que 0)", true);
-                return;
-            }
-            
-            // Monta o nome completo: "Marca - Cor" ou apenas Marca ou apenas Cor
-            let fullName = "";
-            if(brand && color) fullName = `${brand} - ${color}`;
-            else if(brand) fullName = brand;
-            else fullName = color;
-            
-            // Adiciona o filamento com os campos existentes (id, name, price, weight) e também guarda material opcional
-            state.stock.push({ 
-                id: Date.now(), 
-                name: fullName, 
-                price: price, 
-                weight: weight,
-                material: material   // extra, mas pode ser usado futuramente
-            });
-            saveAll();
-            updateStockList();
-            updateFilamentSelect();
-            calculate();
-            toggleModal('modal-stock');
-            // Limpar campos do modal
-            document.getElementById('stk-brand').value = '';
-            document.getElementById('stk-color').value = '';
-            document.getElementById('stk-weight').value = '1000';
-            document.getElementById('stk-price').value = '';
-            resetMaterialButtons();
-            lucide.createIcons();
-            showToast(`Filamento "${fullName}" adicionado!`);
-        }
-        
-        function removeStock(id){ 
-            if(confirm("Remover este filamento?")){ 
-                state.stock = state.stock.filter(s => s.id !== id); 
-                saveAll();
-                updateStockList();
-                updateFilamentSelect();
-                calculate();
-                lucide.createIcons();
-                showToast("Filamento removido");
-            } 
-        }
-        
-        function updateStockList(){
-            let div = document.getElementById('stock-list');
-            if(!state.stock.length){
-                div.innerHTML = '<div class="text-center py-10 text-slate-500 col-span-full">Nenhum filamento cadastrado</div>';
-            } else {
-                div.innerHTML = state.stock.map(s => `
-                    <div class="glass p-5 rounded-2xl border-white/5 card-glow transition-all">
-                        <div class="flex justify-between mb-4"><h3 class="font-bold text-white">${escapeHtml(s.name)}</h3><button onclick="removeStock(${s.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
-                        <div class="flex justify-between items-end"><span class="text-2xl font-tech font-bold text-neon-green">R$ ${s.price.toFixed(2)}</span><span class="text-xs text-slate-500 font-mono">${s.weight}g</span></div>
-                        ${s.material ? `<div class="text-[9px] text-slate-500 mt-2 uppercase tracking-wider">${escapeHtml(s.material)}</div>` : ''}
+              <!-- Card 1: Detalhamento -->
+              <div class="col-md-6">
+                <div class="dashboard-card">
+                  <div class="section-title"><i class="bi bi-card-text text-primary me-2"></i> Detalhes do Projeto</div>
+                  <div class="mb-3">
+                    <label class="form-label">Nome do Projeto / Cliente</label>
+                    <input type="text" class="form-control" id="clienteNome" placeholder="Ex: Action Figure - João" />
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <label class="form-label">Peso (g)</label>
+                      <input type="number" class="form-control" id="pesoGrama" placeholder="0"
+                        oninput="atualizarCalc()" />
                     </div>
-                `).join('');
-            }
-            lucide.createIcons();
-        }
-        
-        // ==================== HISTÓRICO ====================
-        function saveToHistory(){
-            if(!state.stock.length){
-                showToast("Cadastre um filamento primeiro", true);
-                return;
-            }
-            let name = document.getElementById('in-name').value.trim();
-            if(name === "") name = "Projeto sem nome";
-            let timeStr = document.getElementById('in-time').value || "0:00";
-            let hrs = parseTime(timeStr);
-            let weight = document.getElementById('in-weight').value || "0";
-            let priceFinal = parseFloat(document.getElementById('res-total').innerText.replace(/\./g,'').replace(',','.')) || 0;
-            
-            state.history.unshift({ 
-                id: Date.now(), 
-                date: new Date().toLocaleDateString('pt-BR'), 
-                name, 
-                price: priceFinal, 
-                stats: `${weight}g / ${timeStr}`, 
-                hours: hrs 
-            });
-            state.totalHours += hrs;
-            saveAll(); 
-            updateHistoryTable(); 
-            updateUptimeDisplay();
-            showToast("Orçamento salvo! ✅");
-            
-            // Limpar campos do projeto (exceto filamento e margem)
-            document.getElementById('in-name').value = "";
-            document.getElementById('in-weight').value = "";
-            document.getElementById('in-time').value = "";
-            document.getElementById('in-labor-mins').value = "";
-            calculate();
-        }
-        
-        function removeHistory(id){
-            let item = state.history.find(h => h.id === id);
-            if(item) state.totalHours = Math.max(0, state.totalHours - (item.hours || 0));
-            state.history = state.history.filter(h => h.id !== id);
-            saveAll(); 
-            updateHistoryTable(); 
-            updateUptimeDisplay();
-            showToast("Item removido do histórico");
-        }
-        
-        function clearHistory(){ 
-            if(confirm("Apagar todo o histórico? Isso também zerará o tempo total da máquina.")){ 
-                state.history = []; 
-                state.totalHours = 0; 
-                saveAll(); 
-                updateHistoryTable(); 
-                updateUptimeDisplay(); 
-                showToast("Histórico limpo");
-            } 
-        }
-        
-        function updateHistoryTable(){
-            let tbody = document.getElementById('history-table');
-            if(!state.history.length){
-                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">Nenhum projeto salvo ainda.</td></tr>';
-            } else {
-                tbody.innerHTML = state.history.map(h => `
-                    <tr class="hover:bg-white/[0.02] transition-colors">
-                        <td class="p-5 text-xs text-slate-500">${h.date}</td>
-                        <td class="p-5 font-bold text-slate-200">${escapeHtml(h.name)}</td>
-                        <td class="p-5 text-right font-mono text-xs text-slate-400">${h.stats}</td>
-                        <td class="p-5 text-right font-bold text-neon-blue">R$ ${(typeof h.price === 'number' ? h.price : parseFloat(h.price)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-                        <td class="p-5 text-center"><button onclick="removeHistory(${h.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button></td>
-                    </tr>
-                `).join('');
-            }
-            lucide.createIcons();
-        }
-        
-        function updateUptimeDisplay(){ 
-            let h = Math.floor(state.totalHours), m = Math.round((state.totalHours - h) * 60); 
-            document.getElementById('total-machine-time').innerText = `${h}h ${m}m`; 
-        }
-        
-        function resetOdometer(){ 
-            if(confirm("Zerar apenas o tempo de uso da máquina?")){ 
-                state.totalHours = 0; 
-                saveAll(); 
-                updateUptimeDisplay(); 
-                showToast("Odômetro zerado");
-            } 
-        }
-        
-        // ==================== CONFIGURAÇÕES ====================
-        function populateSelects(){
-            let stateSel = document.getElementById('stateSelect');
-            stateSel.innerHTML = '<option value="">Selecione seu estado...</option>';
-            for(let uf in electricityCostsByState) 
-                stateSel.innerHTML += `<option value="${uf}">${uf} (R$ ${electricityCostsByState[uf].toFixed(2)})</option>`;
-            let currentKwh = parseFloat(state.settings.kwh);
-            for(let uf in electricityCostsByState) 
-                if(Math.abs(electricityCostsByState[uf] - currentKwh) < 0.01) stateSel.value = uf;
-            
-            let printerSel = document.getElementById('printerSelect');
-            printerSel.innerHTML = '<option value="">Selecione sua impressora...</option>';
-            for(let name in commonPrinters) 
-                printerSel.innerHTML += `<option value="${name}">${name} (${commonPrinters[name].wattage}W)</option>`;
-            let currWatts = parseFloat(state.settings.watts), currPrice = parseFloat(state.settings.printerPrice);
-            for(let name in commonPrinters) 
-                if(Math.abs(commonPrinters[name].wattage - currWatts) < 10 && Math.abs(commonPrinters[name].price - currPrice) < 100) 
-                    printerSel.value = name;
-        }
-        
-        function applyStateCost(){ 
-            let uf = document.getElementById('stateSelect').value; 
-            if(uf && electricityCostsByState[uf]){ 
-                document.getElementById('set-kwh').value = electricityCostsByState[uf]; 
-                saveSettings(); 
-                showToast(`Custo kWh atualizado para R$ ${electricityCostsByState[uf].toFixed(2)}`);
-            } 
-        }
-        
-        function applyPrinterData(){ 
-            let pr = document.getElementById('printerSelect').value; 
-            if(pr && commonPrinters[pr]){ 
-                document.getElementById('set-watts').value = commonPrinters[pr].wattage; 
-                document.getElementById('set-printer-price').value = commonPrinters[pr].price; 
-                saveSettings(); 
-                showToast(`Dados da ${pr} aplicados`);
-            } 
-        }
-        
-        function saveSettings(){
-            state.settings = { 
-                laborRate: parseFloat(document.getElementById('set-labor-rate').value) || 0,
-                kwh: parseFloat(document.getElementById('set-kwh').value) || 0,
-                watts: parseFloat(document.getElementById('set-watts').value) || 0,
-                printerLife: parseFloat(document.getElementById('set-life').value) || 5000,
-                printerPrice: parseFloat(document.getElementById('set-printer-price').value) || 0
-            };
-            localStorage.setItem('3dcalc_settings_v5', JSON.stringify(state.settings));
-            calculate();
-        }
-        
-        function loadSettings(){
-            let s = state.settings;
-            document.getElementById('set-labor-rate').value = s.laborRate;
-            document.getElementById('set-kwh').value = s.kwh;
-            document.getElementById('set-watts').value = s.watts;
-            document.getElementById('set-life').value = s.printerLife;
-            document.getElementById('set-printer-price').value = s.printerPrice || 2000;
-        }
-        
-        function updateFilamentSelect(){
-            let sel = document.getElementById('in-filament');
-            if(state.stock.length === 0){
-                sel.innerHTML = '<option disabled>Cadastre no estoque</option>';
-            } else {
-                sel.innerHTML = state.stock.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
-            }
-            calculate();
-        }
-        
-        function showTab(tab){ 
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); 
-            document.getElementById(`tab-${tab}`).classList.remove('hidden'); 
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active')); 
-            document.getElementById(`btn-${tab}`).classList.add('tab-active'); 
-            lucide.createIcons(); 
-        }
-        
-        function toggleModal(id){ 
-            document.getElementById(id).classList.toggle('hidden'); 
-            if(id === 'modal-stock' && !document.getElementById(id).classList.contains('hidden')){
-                // Reset material buttons ao abrir modal
-                initMaterialButtons();
-            }
-        }
-        
-        // ==================== BACKUP ====================
-        function exportData(){ 
-            let blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"}); 
-            let a = document.createElement('a'); 
-            a.href = URL.createObjectURL(blob); 
-            a.download = `3dcalc_backup_${new Date().toISOString().slice(0,10)}.json`; 
-            a.click(); 
-            showToast("Backup exportado");
-        }
-        
-        function importData(e){ 
-            let file = e.target.files[0]; 
-            if(!file) return; 
-            let reader = new FileReader(); 
-            reader.onload = ev => { 
-                try{ 
-                    let imp = JSON.parse(ev.target.result); 
-                    if(confirm("Substituir dados atuais?")){ 
-                        state = imp; 
-                        if(!state.stock) state.stock = []; 
-                        if(!state.history) state.history = []; 
-                        if(typeof state.totalHours != 'number') state.totalHours = 0; 
-                        if(!state.settings) state.settings = {kwh:0.85,watts:150,printerPrice:2000,printerLife:5000,laborRate:30}; 
-                        saveAll(); 
-                        location.reload(); 
-                    } 
-                } catch(err){ showToast("Arquivo inválido", true); } 
-            }; 
-            reader.readAsText(file); 
-        }
-        
-        // ==================== INICIALIZAÇÃO ====================
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSettings(); 
-            populateSelects(); 
-            updateStockList(); 
-            updateFilamentSelect(); 
-            updateHistoryTable(); 
-            updateUptimeDisplay(); 
-            lucide.createIcons(); 
-            calculate();
-            initMaterialButtons();
+                    <div class="col-6">
+                      <label class="form-label">Tempo (h:mm)</label>
+                      <input type="text" class="form-control" id="tempoImpressao" placeholder="0:00"
+                        oninput="atualizarCalc()" />
+                    </div>
+                    <div class="col-12 mt-3">
+                      <label class="form-label d-flex justify-content-between align-items-center mb-2">
+                        <span>Quantidade de Peças</span>
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary" id="qtdBadge"
+                          style="font-size: 0.75rem;">1 peça</span>
+                      </label>
+                      <div class="d-flex align-items-center gap-2">
+                        <button
+                          class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                          style="width:36px; height:36px; flex-shrink:0" onclick="ajustarQtd(-1)"><i
+                            class="bi bi-dash fs-5"></i></button>
+                        <input type="number" class="form-control text-center fw-bold" id="qtdPecas" value="1" min="1"
+                          style="max-width:80px; font-size: 1.1rem;" oninput="atualizarQtdBadge();atualizarCalc()" />
+                        <button
+                          class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                          style="width:36px; height:36px; flex-shrink:0" onclick="ajustarQtd(1)"><i
+                            class="bi bi-plus fs-5"></i></button>
+                        <div class="d-flex flex-wrap gap-1 ms-2">
+                          <button class="btn btn-outline-secondary btn-quick m-0" onclick="setQtd(5)">5x</button>
+                          <button class="btn btn-outline-secondary btn-quick m-0" onclick="setQtd(10)">10x</button>
+                          <button class="btn btn-outline-secondary btn-quick m-0" onclick="setQtd(25)">25x</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Material -->
+              <div class="col-md-6">
+                <div class="dashboard-card">
+                  <div class="section-title"><i class="bi bi-box-fill text-primary me-2"></i> Material & Acabamento
+                  </div>
+                  <div class="mb-3 d-flex flex-wrap gap-1">
+                    <button class="btn btn-outline-secondary btn-quick m-0"
+                      onclick="setMaterialRapido(120)">PLA</button>
+                    <button class="btn btn-outline-secondary btn-quick m-0"
+                      onclick="setMaterialRapido(130)">PETG</button>
+                    <button class="btn btn-outline-secondary btn-quick m-0"
+                      onclick="setMaterialRapido(110)">ABS</button>
+                    <button class="btn btn-info btn-quick text-white m-0 ms-auto" data-bs-toggle="modal"
+                      data-bs-target="#modalEstoque"><i class="bi bi-box"></i> Usar Estoque</button>
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <label class="form-label">Custo Mat. (R$/kg)</label>
+                      <input type="number" class="form-control" id="custoMaterialEspecifico" placeholder="0.00" />
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Acabamento (h)</label>
+                      <input type="text" class="form-control" id="tempoAcabamento" placeholder="0" />
+                    </div>
+                  </div>
+
+                  <div class="mt-3 form-check form-switch p-0 d-flex align-items-center gap-2">
+                    <input class="form-check-input m-0" type="checkbox" role="switch" id="switchMultiMaterial"
+                      onchange="toggleMultiMaterial()" style="width: 2.5em; height: 1.25em; cursor: pointer;" />
+                    <label class="form-check-label fw-bold" for="switchMultiMaterial"
+                      style="font-size: 0.85rem; cursor: pointer;">Usar Multi-Material (AMS/MMU)</label>
+                  </div>
+                  <div id="multiMaterialCampos" style="display:none" class="row g-3 mt-1 p-3 rounded-3 border">
+                    <div class="col-6"><label class="form-label mb-1">Peso 2º Fil. (g)</label><input type="number"
+                        class="form-control form-control-sm" id="peso2Grama" /></div>
+                    <div class="col-6"><label class="form-label mb-1">Custo (R$/kg)</label><input type="number"
+                        class="form-control form-control-sm" id="custo2Kg" /></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Riscos e Margens -->
+              <div class="col-md-12">
+                <div class="dashboard-card">
+                  <div class="section-title"><i class="bi bi-graph-up-arrow text-primary me-2"></i> Riscos e Margens de
+                    Lucro</div>
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <label class="form-label d-flex justify-content-between">
+                        <span>Margem para Risco/Falha</span>
+                        <span class="text-danger fw-bold fs-6" id="riscoValor">10%</span>
+                      </label>
+                      <input type="range" class="slider-risk form-range" id="riscoSlider" value="10" max="100"
+                        oninput="atualizarCalc()" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label d-flex justify-content-between">
+                        <span>Lucro Desejado Líquido</span>
+                        <span class="text-success fw-bold fs-6" id="lucroValor">100%</span>
+                      </label>
+                      <input type="range" class="slider-profit form-range" id="lucroSlider" max="500" value="100"
+                        oninput="atualizarCalc()" />
+                      <div class="mt-3 text-end d-flex gap-2 justify-content-end flex-wrap">
+                        <button class="btn btn-outline-success btn-quick m-0" onclick="setMargemRapida(50)">50%</button>
+                        <button class="btn btn-outline-success btn-quick m-0"
+                          onclick="setMargemRapida(100)">100%</button>
+                        <button class="btn btn-outline-success btn-quick m-0"
+                          onclick="setMargemRapida(200)">200%</button>
+                        <button class="btn btn-outline-success btn-quick m-0"
+                          onclick="setMargemRapida(300)">300%</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botão Calcular -->
+              <div class="col-md-12">
+                <button class="btn btn-primary w-100 fw-bold shadow btn-calc-pulse"
+                  style="padding: 0.75rem; font-size: 1rem; border-radius: 0.75rem; letter-spacing: 0.5px;"
+                  onclick="calcularProjeto()">
+                  <i class="bi bi-calculator me-2"></i> CALCULAR PREÇO FINAL
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Coluna Direita: Resultados e Ações -->
+          <div class="col-xl-4 calc-summary-column">
+            <div class="dashboard-card sticky-top" style="top: 0px;">
+              <div class="section-title text-center border-0 mb-2"><i class="bi bi-receipt-cutoff text-primary"></i>
+                Resumo do Orçamento</div>
+
+              <div class="result-box shadow-sm">
+                <span class="text-muted fw-bold d-block text-uppercase"
+                  style="letter-spacing: 1.5px; font-size: 0.75rem;">Valor a Cobrar</span>
+                <div class="result-value" id="precoFinalDisplay">R$ 0,00</div>
+                <div class="d-flex justify-content-between text-muted mt-4 pt-3 border-top"
+                  style="border-color: var(--border-color) !important;">
+                  <span style="font-size: 0.9rem; text-align: left;">Custo Produção:<br><strong id="custoDisplay"
+                      style="color: var(--text-main); font-size: 1.15rem;">R$ 0,00</strong></span>
+                  <span style="font-size: 0.9rem; text-align: right;">Lucro Líquido:<br><strong class="text-success"
+                      id="lucroDisplay" style="font-size: 1.15rem;">R$ 0,00</strong></span>
+                </div>
+
+                <div id="qtdTotalRow" class="d-none mt-3 pt-3 border-top text-center"
+                  style="border-color: var(--border-color) !important;">
+                  <div class="d-flex justify-content-center align-items-center gap-3">
+                    <span class="text-muted" style="font-size: 0.85rem;">Unitário:<br><strong id="precoUnitDisplay"
+                        class="text-primary fs-6">R$ 0,00</strong></span>
+                    <div style="height: 30px; width: 1px; background-color: var(--border-color);"></div>
+                    <span class="text-muted" style="font-size: 0.85rem;"><span id="qtdTotalLabel"
+                        class="fw-bold">1</span>x Total:<br><strong id="precoTotalDisplay" class="text-success fs-6">R$
+                        0,00</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 mb-4">
+                <label class="form-label text-center d-block mb-2">Composição dos Custos Reais</label>
+                <div class="progress progress-custom shadow-sm">
+                  <div class="progress-bar bg-danger" id="barMaterial" data-bs-toggle="tooltip" title="Material"></div>
+                  <div class="progress-bar bg-warning" id="barEnergia" data-bs-toggle="tooltip" title="Energia"></div>
+                  <div class="progress-bar bg-info" id="barDepreciacao" data-bs-toggle="tooltip" title="Depreciação">
+                  </div>
+                  <div class="progress-bar bg-secondary" id="barMaoObra" data-bs-toggle="tooltip" title="Mão de Obra">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-center gap-3 mt-3 small fw-medium" style="color: var(--text-muted);">
+                  <span><i class="bi bi-circle-fill text-danger small"></i> Mat.</span>
+                  <span><i class="bi bi-circle-fill text-warning small"></i> Energ.</span>
+                  <span><i class="bi bi-circle-fill text-info small"></i> Deprec.</span>
+                  <span><i class="bi bi-circle-fill text-secondary small"></i> Trab.</span>
+                </div>
+                <div class="mt-4 text-center text-muted small p-2 rounded-3 border"
+                  style="border-color: var(--border-color) !important; background: var(--bg-body);">
+                  <i class="bi bi-info-circle text-primary"></i> Paga a impressora após vender <strong><span
+                      id="roiDisplay">0</span></strong> unid.
+                </div>
+              </div>
+
+              <hr class="my-4" style="border-color: var(--border-color);">
+              <div class="d-grid gap-3">
+                <button
+                  class="btn btn-success fw-bold p-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                  onclick="salvarNoHistorico()"><i class="bi bi-save fs-5"></i> Guardar Orçamento</button>
+                <button
+                  class="btn btn-outline-primary fw-bold p-3 rounded-3 d-flex align-items-center justify-content-center gap-2"
+                  onclick="irParaOrcamento()"><i class="bi bi-file-earmark-text fs-5"></i> Gerar Orçamento PDF</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ABA AJUSTES -->
+      <div class="tab-pane fade fade-in" id="ajustes">
+        <div class="row g-4">
+          <!-- Perfil da Máquina -->
+          <div class="col-lg-6">
+            <div class="dashboard-card h-100">
+              <div class="section-title"><i class="bi bi-printer text-primary me-2"></i> Perfil da Máquina & Custos
+              </div>
+              <div class="mb-3 d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-secondary btn-quick m-0"
+                  onclick="setMaquinaRapida('Creality Ender 3 V3')">Ender V3</button>
+                <button class="btn btn-outline-secondary btn-quick m-0" onclick="setMaquinaRapida('Bambu Lab A1')">Bambu
+                  A1</button>
+                <button class="btn btn-outline-secondary btn-quick m-0"
+                  onclick="setMaquinaRapida('Bambu Lab P1P/X1C')">Bambu X1C</button>
+              </div>
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label">Selecionar Máquina Predefinida</label>
+                  <select class="form-select" id="selectImpressora" onchange="aplicarPerfilMaquina()">
+                    <option value="">Personalizada</option>
+                  </select>
+                </div>
+                <div class="col-md-6"><label class="form-label">Nome da Impressora</label><input class="form-control"
+                    id="nomeMaquina" /></div>
+                <div class="col-md-6"><label class="form-label">Potência Consumo (W)</label><input type="number"
+                    class="form-control" id="potenciaW" /></div>
+                <div class="col-md-6"><label class="form-label">Valor de Compra (R$)</label><input type="number"
+                    class="form-control" id="valorMaquina" /></div>
+                <div class="col-md-6"><label class="form-label">Vida Útil (Horas)</label><input type="number"
+                    class="form-control" id="vidaUtil" /></div>
+
+                <div class="col-12 my-2">
+                  <hr style="border-color: var(--border-color);">
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Estado (Tarifa de Energia Média)</label>
+                  <select class="form-select" id="selectEstado" onchange="aplicarCustoEstado()">
+                    <option value="">Selecione o seu estado...</option>
+                  </select>
+                </div>
+                <div class="col-md-4"><label class="form-label">Energia (R$/kWh)</label><input type="number" step="0.01"
+                    class="form-control" id="custoKwh" /></div>
+                <div class="col-md-4"><label class="form-label">Custo Mat. Padrão (R$)</label><input type="number"
+                    step="0.01" class="form-control" id="custoMaterialPadrao" /></div>
+                <div class="col-md-4"><label class="form-label">Sua Hora/Trabalho (R$)</label><input type="number"
+                    step="0.01" class="form-control" id="maoObraHora" /></div>
+              </div>
+              <div class="mt-4 pt-2"><button class="btn btn-primary w-100 p-2 fw-bold rounded-3"
+                  onclick="salvarEstadoAjustes('Configurações da Máquina Guardadas na Nuvem!')"><i
+                    class="bi bi-cloud-arrow-up me-2"></i>Salvar Definições da Máquina</button></div>
+            </div>
+          </div>
+
+          <!-- Personalização PDF -->
+          <div class="col-lg-6">
+            <div class="dashboard-card h-100">
+              <div class="section-title"><i class="bi bi-file-pdf text-danger me-2"></i> Personalização do Orçamento PDF
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Nome da sua Empresa</label><input class="form-control"
+                    id="empresaNome" placeholder="Ex: João 3D Maker"></div>
+                <div class="col-md-6"><label class="form-label">Chave Pix (Gerará QR Code)</label><input
+                    class="form-control" id="pixChave" placeholder="E-mail, CPF ou Telefone"></div>
+                <div class="col-md-4"><label class="form-label">Validade (dias)</label><input type="number"
+                    class="form-control" id="validadeDias" value="7"></div>
+                <div class="col-md-8"><label class="form-label">Prazo de Entrega Padrão</label><input
+                    class="form-control" id="prazoEntrega" placeholder="Ex: 5 dias úteis"></div>
+                <div class="col-md-6"><label class="form-label">Assinatura no PDF</label><input class="form-control"
+                    id="assinatura" placeholder="Nome do Responsável"></div>
+                <div class="col-md-6"><label class="form-label">URL do Logótipo (Opcional)</label><input
+                    class="form-control" id="empresaLogo" placeholder="https://..."></div>
+                <div class="col-12"><label class="form-label">Texto de Garantia</label><input class="form-control"
+                    id="garantia" placeholder="Garantia contra defeitos de fabricação."></div>
+                <div class="col-12"><label class="form-label">Observações Gerais</label><textarea class="form-control"
+                    id="observacoes" rows="2"
+                    placeholder="Orçamento sujeito à disponibilidade de cores e tempo de máquina."></textarea></div>
+              </div>
+              <div class="mt-4 pt-2"><button class="btn btn-primary w-100 p-2 fw-bold rounded-3"
+                  onclick="salvarEstadoAjustes('Configurações do PDF Guardadas na Nuvem!')"><i
+                    class="bi bi-cloud-arrow-up me-2"></i>Salvar Dados do PDF</button></div>
+            </div>
+          </div>
+
+          <!-- Area de Backup (Discreta) -->
+          <div class="col-lg-12">
+            <div class="dashboard-card text-center" style="height:auto">
+              <span class="text-muted small d-block mb-3 fw-medium">Opções de Segurança (Backup Offline)</span>
+              <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="fazerDownloadBackup()"><i
+                  class="bi bi-download me-1"></i> Exportar Dados</button>
+              <label class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-0 ms-2 cursor-pointer"><i
+                  class="bi bi-upload me-1"></i> Importar <input type="file" id="inputBackup" accept=".json" hidden
+                  onchange="window.carregarBackup(event)" /></label>
+            </div>
+          </div>
+
+          <div class="col-12" id="orcamentoDentroDefinicoes"></div>
+        </div>
+      </div>
+
+      <!-- ABA ESTOQUE -->
+      <div class="tab-pane fade fade-in" id="estoque">
+        <div class="dashboard-card">
+          <div class="section-title"><i class="bi bi-box-seam text-primary me-2"></i> Gestão de Filamentos (Estoque
+            Virtual)</div>
+          <div class="row g-3 mb-4 align-items-end bg-light p-3 rounded-3 border"
+            style="background: var(--bg-body) !important; border-color: var(--border-color) !important;">
+            <div class="col-md-4">
+              <label class="form-label">Cor / Marca / Material</label>
+              <input class="form-control" id="estoqueNome" placeholder="Ex: PLA Preto eSun" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Peso Original (g)</label>
+              <input type="number" class="form-control" id="estoquePesoInicial" placeholder="Ex: 1000" />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Preço Pago (R$/Rolo)</label>
+              <input type="number" class="form-control" id="estoqueCustoKg" placeholder="Ex: 120.00" />
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary w-100 fw-bold" onclick="adicionarCarretel()"><i
+                  class="bi bi-plus-lg me-1"></i> Adicionar</button>
+            </div>
+          </div>
+          <div id="listaEstoque" class="list-group shadow-sm" style="border-radius: 1rem; overflow: hidden;"></div>
+        </div>
+      </div>
+
+      <!-- ABA HISTÓRICO -->
+      <div class="tab-pane fade fade-in" id="historico">
+        <div class="dashboard-card">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div class="section-title mb-0 border-0 pb-0"><i class="bi bi-archive text-primary me-2"></i> Histórico de
+              Projetos</div>
+            <button class="btn btn-outline-secondary rounded-pill px-3 fw-medium" onclick="exportarCSV()"><i
+                class="bi bi-filetype-csv me-1"></i> Exportar Folha Excel</button>
+          </div>
+
+          <div class="row text-center mb-4 pb-4 border-bottom" style="border-color: var(--border-color) !important;">
+            <div class="col-4 border-end" style="border-color: var(--border-color) !important;">
+              <span class="text-muted small fw-bold text-uppercase tracking-wide">Faturamento</span><br>
+              <strong class="text-primary fs-3">R$ <span id="histFatTotal">0</span></strong>
+            </div>
+            <div class="col-4 border-end" style="border-color: var(--border-color) !important;">
+              <span class="text-muted small fw-bold text-uppercase tracking-wide">Lucro Estimado</span><br>
+              <strong class="text-success fs-3">R$ <span id="histLucroTotal">0</span></strong>
+            </div>
+            <div class="col-4">
+              <span class="text-muted small fw-bold text-uppercase tracking-wide">Projetos Salvos</span><br>
+              <strong class="fs-3 text-main" id="histCount">0</strong>
+            </div>
+          </div>
+
+          <!-- Grid de Histórico -->
+          <div id="listaHistorico" class="row g-4"></div>
+        </div>
+      </div>
+
+      <!-- ABA ORÇAMENTO PDF -->
+      <div class="tab-pane fade fade-in" id="orcamento">
+        <div class="row g-4">
+          <!-- Formulário -->
+          <div class="col-xl-6">
+            <div class="dashboard-card" style="height:auto">
+              <div class="section-title"><i class="bi bi-file-earmark-text text-primary me-2"></i> Gerador de Orçamento
+                PDF</div>
+              <div class="row g-2 mb-3">
+                <div class="col-12"><label class="form-label">Logo da Empresa</label>
+                  <label class="form-control d-flex align-items-center gap-2"
+                    style="cursor:pointer;color:var(--text-muted)">
+                    <i class="bi bi-upload text-primary"></i><span id="orc_logoName">Clique para enviar logo
+                      (PNG/JPG)...</span>
+                    <input type="file" id="orc_logo" accept="image/*" hidden onchange="orc_handleLogo(event)">
+                  </label>
+                </div>
+                <div class="col-md-6"><label class="form-label">Nome da Empresa</label><input class="form-control"
+                    id="orc_empresa" placeholder="Ex: João 3D Maker" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-md-6"><label class="form-label">Slogan</label><input class="form-control"
+                    id="orc_slogan" placeholder="Soluções em Impressão 3D" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-md-6"><label class="form-label">E-mail</label><input class="form-control" id="orc_email"
+                    type="email" placeholder="contato@empresa.com" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-md-6"><label class="form-label">Telefone</label><input class="form-control"
+                    id="orc_telefone" placeholder="(00) 00000-0000" oninput="atualizarPreviewOrc()"></div>
+              </div>
+              <hr style="border-color:var(--border-color)" class="my-2">
+              <div class="row g-2 mb-3">
+                <div class="col-md-6"><label class="form-label">Nome do Cliente</label><input class="form-control"
+                    id="orc_cliente" placeholder="Nome do cliente" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-md-6"><label class="form-label">Contato do Cliente</label><input class="form-control"
+                    id="orc_clienteContato" placeholder="Telefone ou e-mail" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-md-6"><label class="form-label">Nº do Orçamento</label><input class="form-control"
+                    id="orc_numero" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-md-6"><label class="form-label">Data</label><input class="form-control" id="orc_data"
+                    type="date" oninput="atualizarPreviewOrc()"></div>
+              </div>
+              <hr style="border-color:var(--border-color)" class="my-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="form-label mb-0 fw-bold" style="text-transform:uppercase;letter-spacing:.5px">Itens</span>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="orc_adicionarItem()"><i
+                      class="bi bi-plus-lg me-1"></i>Adicionar</button>
+                  <button class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="orc_importarCalculo()"><i
+                      class="bi bi-calculator me-1"></i>Importar Cálculo</button>
+                </div>
+              </div>
+              <div id="orc_itensForm" class="d-flex flex-column gap-2 mb-3"></div>
+              <hr style="border-color:var(--border-color)" class="my-2">
+              <div class="row g-2">
+                <div class="col-6"><label class="form-label">Desconto (%)</label><input class="form-control"
+                    id="orc_desconto" type="number" value="0" min="0" max="100" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-6"><label class="form-label">Frete (R$)</label><input class="form-control"
+                    id="orc_frete" type="number" value="0" min="0" oninput="atualizarPreviewOrc()"></div>
+                <div class="col-12"><label class="form-label">Observações</label><textarea class="form-control"
+                    id="orc_obs" rows="2" placeholder="Termos e condições..."
+                    oninput="atualizarPreviewOrc()"></textarea></div>
+              </div>
+              <button class="btn btn-success w-100 fw-bold mt-3 p-2 rounded-3" onclick="gerarPDFOrcamento()">
+                <i class="bi bi-file-earmark-pdf me-2"></i> BAIXAR ORÇAMENTO PDF
+              </button>
+            </div>
+          </div>
+          <!-- Preview em Tempo Real -->
+          <div class="col-xl-6">
+            <div class="dashboard-card p-0 overflow-hidden" style="height:auto">
+              <div class="px-3 py-2 d-flex justify-content-between align-items-center border-bottom"
+                style="border-color:var(--border-color)!important;background:rgba(59,130,246,.06)">
+                <span class="fw-bold text-primary"
+                  style="font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase"><i
+                    class="bi bi-eye me-2"></i>Visualização em Tempo Real</span>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success"
+                  style="font-size:.65rem">LIVE</span>
+              </div>
+              <div style="background:var(--bg-body);padding:.75rem;overflow-y:auto;max-height:78vh">
+                <div id="orc_preview"
+                  style="background:#fff;color:#0f172a;border-radius:.5rem;padding:1.5rem;box-shadow:0 4px 24px rgba(0,0,0,.15);font-family:'Inter',sans-serif;min-height:480px">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <!-- Modais -->
+  <div class="modal fade" id="modalEstoque">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content"
+        style="background-color: var(--card-bg); color: var(--text-main); border-radius: 1.25rem; border: 1px solid var(--border-color);">
+        <div class="modal-header border-bottom" style="border-color: var(--border-color) !important;">
+          <h5 class="fw-bold m-0"><i class="bi bi-box me-2 text-primary"></i> Selecionar do Estoque</h5><button
+            class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div id="modalEstoqueList" class="list-group list-group-flush"
+            style="border-radius: 0 0 1.25rem 1.25rem; overflow: hidden;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEditarHistorico">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content"
+        style="background-color: var(--card-bg); color: var(--text-main); border-radius: 1.25rem; border: 1px solid var(--border-color);">
+        <div class="modal-header border-bottom" style="border-color: var(--border-color) !important;">
+          <h5 class="fw-bold m-0"><i class="bi bi-pencil-square me-2 text-primary"></i> Editar Projeto Guardado</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4"><input type="hidden" id="editId" />
+          <div class="row g-4">
+            <div class="col-md-6"><label class="form-label">Cliente / Projeto</label><input class="form-control"
+                id="editCliente" /></div>
+            <div class="col-md-3"><label class="form-label">Peso (g)</label><input type="number" class="form-control"
+                id="editPeso" /></div>
+            <div class="col-md-3"><label class="form-label">Tempo (h)</label><input type="number" step="0.01"
+                class="form-control" id="editTempo" /></div>
+            <div class="col-md-4"><label class="form-label">Preço Final Cobrado</label><input type="number" step="0.01"
+                class="form-control fw-bold text-primary" id="editPreco" /></div>
+            <div class="col-md-4"><label class="form-label">Lucro Líquido</label><input type="number" step="0.01"
+                class="form-control text-success fw-bold" id="editLucro" /></div>
+            <div class="col-md-4"><label class="form-label">Margem Aplicada (%)</label><input type="number" step="1"
+                class="form-control" id="editMargem" /></div>
+          </div>
+        </div>
+        <div class="modal-footer border-top" style="border-color: var(--border-color) !important;"><button
+            class="btn btn-light fw-medium" data-bs-dismiss="modal">Cancelar</button><button
+            class="btn btn-primary fw-bold" onclick="salvarEdicaoHistorico()"><i class="bi bi-check-lg me-1"></i>
+            Guardar Alterações</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bibliotecas Externas -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <!-- Lógica Principal (Mantida intacta e funcional) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const electricityCostsByState = { "AC": 1.42, "AL": 1.32, "AP": 1.19, "AM": 1.27, "BA": 1.38, "CE": 1.33, "DF": 1.24, "ES": 1.30, "GO": 1.26, "MA": 1.29, "MT": 1.35, "MS": 1.23, "MG": 1.27, "PA": 1.22, "PB": 1.30, "PR": 1.20, "PE": 1.36, "PI": 1.26, "RJ": 1.33, "RN": 1.32, "RS": 1.40, "RO": 1.20, "RR": 1.17, "SC": 1.22, "SP": 1.27, "SE": 1.29, "TO": 1.23 };
+    const commonPrinters = { "Creality Ender 3/V2/Neo": { wattage: 150, price: 1800 }, "Creality CR-10": { wattage: 300, price: 3000 }, "Creality CR-10 SE": { wattage: 350, price: 3500 }, "Creality Ender 3 V3": { wattage: 200, price: 2500 }, "Creality K1/K1C": { wattage: 350, price: 4000 }, "Prusa i3 MK3S+": { wattage: 180, price: 6000 }, "Anycubic Mega": { wattage: 200, price: 1500 }, "Artillery Sidewinder": { wattage: 250, price: 2200 }, "Bambu Lab P1P/X1C": { wattage: 350, price: 12000 }, "Bambu Lab A1": { wattage: 280, price: 3800 }, "Voron 2.4": { wattage: 500, price: 8000 } };
+
+    let estado = { ajustes: { nomeMaquina: 'Ender 3', potenciaW: 150, valorMaquina: 1800, vidaUtil: 8000, custoKwh: 1.25, custoMaterialPadrao: 100, maoObraHora: 30 }, empresa: { nome: 'JJCSC', logo: '', pix: '', validadeDias: 7, prazoEntrega: '10 dias úteis', assinatura: '', garantia: '7 dias contra defeitos de fabricação', observacoes: 'Orçamento sujeito à disponibilidade de material e aprovação do cliente.' }, estoque: [], historico: [], proximoIdEstoque: 1, proximoIdHistorico: 1, calculoAtual: null, roloSelecionadoId: null };
+
+    let app, auth, db;
+    let currentUser = null;
+
+    // Tenta iniciar a Firebase de forma segura (Fallback ativado se falhar)
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyCztz6VNAxa4Ys5-mtV5lqIDP5mhGyO59Q",
+        authDomain: "cal3d-a0dc1.firebaseapp.com",
+        projectId: "cal3d-a0dc1",
+        storageBucket: "cal3d-a0dc1.firebasestorage.app",
+        messagingSenderId: "743657493232",
+        appId: "1:743657493232:web:faca612da597f864642835",
+        measurementId: "G-YCW3SDGB0F"
+      };
+
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+    } catch (error) {
+      console.error("Erro crítico ao configurar Firebase. A carregar no modo offline.", error);
+    }
+
+    // INICIALIZAÇÃO DO SISTEMA
+    async function initApp() {
+      verificarTemaSalvo();
+      moverOrcamentoParaDefinicoes();
+      popularSelects();
+
+      ['riscoSlider', 'lucroSlider'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => {
+          document.getElementById(id.replace('Slider', 'Valor')).textContent = el.value + '%';
         });
-    </script>
+      });
+
+      if (auth && db) {
+        try {
+          await signInAnonymously(auth);
+        } catch (e) {
+          console.error("Falha ao iniciar autenticação anónima. Verifique na Consola Firebase se está ativada.", e);
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+          currentUser = user;
+          if (user) {
+            await carregarDados();
+            atualizarTudo();
+            document.getElementById('cloudStatusBadge').innerHTML = '<i class="bi bi-cloud-check me-1"></i> Sincronizado';
+            document.getElementById('cloudStatusBadge').className = "badge badge-status top-status-pill status-synced";
+          } else {
+            iniciarModoLocal("<i class='bi bi-person-x me-1'></i> Sem Sessão");
+          }
+        });
+      } else {
+        iniciarModoLocal("<i class='bi bi-hdd me-1'></i> Modo Local");
+      }
+    }
+    window.addEventListener('load', initApp);
+
+    async function iniciarModoLocal(mensagem) {
+      await carregarDados();
+      atualizarTudo();
+      const badge = document.getElementById('cloudStatusBadge');
+      badge.innerHTML = mensagem;
+      badge.className = "badge badge-status top-status-pill status-muted";
+    }
+
+    function atualizarTudo() {
+      atualizarUIEstoque();
+      atualizarUIHistorico();
+      atualizarDashboard();
+    }
+
+    // --- MODO ESCURO ---
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-bs-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-bs-theme', newTheme);
+      localStorage.setItem('calc3d_theme', newTheme);
+      atualizarIconeTema(newTheme);
+    }
+    function verificarTemaSalvo() {
+      const savedTheme = localStorage.getItem('calc3d_theme') || 'light';
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      atualizarIconeTema(savedTheme);
+    }
+    function atualizarIconeTema(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (theme === 'dark') {
+        icon.className = 'bi bi-sun-fill text-warning fs-5';
+      } else {
+        icon.className = 'bi bi-moon-stars-fill text-primary fs-5';
+      }
+    }
+
+    function moverOrcamentoParaDefinicoes() {
+      const destino = document.getElementById('orcamentoDentroDefinicoes');
+      const origem = document.querySelector('#orcamento > .row');
+      if (!destino || !origem || destino.contains(origem)) return;
+
+      origem.classList.add('mt-1');
+      destino.appendChild(origem);
+
+      const paneOrcamento = document.getElementById('orcamento');
+      if (paneOrcamento) paneOrcamento.remove();
+    }
+
+    function sincronizarEmpresaOrcamento() {
+      const empresaNome = document.getElementById('empresaNome');
+      const orcEmpresa = document.getElementById('orc_empresa');
+      if (empresaNome && orcEmpresa) orcEmpresa.value = empresaNome.value;
+      atualizarPreviewOrc();
+    }
+
+    function sincronizarObservacoesOrcamento() {
+      atualizarPreviewOrc();
+    }
+
+    function popularSelects() { const s1 = document.getElementById('selectImpressora'); for (let nome in commonPrinters) s1.add(new Option(`${nome}`, nome)); const s2 = document.getElementById('selectEstado'); for (let uf in electricityCostsByState) s2.add(new Option(`${uf} - R$${electricityCostsByState[uf].toFixed(2)}/kWh`, uf)); }
+    function aplicarPerfilMaquina() { const nome = document.getElementById('selectImpressora').value; if (!nome) return; const dados = commonPrinters[nome]; document.getElementById('nomeMaquina').value = nome; document.getElementById('potenciaW').value = dados.wattage; document.getElementById('valorMaquina').value = dados.price; salvarEstado(); }
+    function setMaquinaRapida(nome) { document.getElementById('selectImpressora').value = nome; aplicarPerfilMaquina(); }
+    function aplicarCustoEstado() { const uf = document.getElementById('selectEstado').value; if (!uf) return; document.getElementById('custoKwh').value = electricityCostsByState[uf]; salvarEstado(); }
+
+    // --- FIREBASE SYNC: LOAD ---
+    async function carregarDados() {
+      let dadosSalvos = null;
+
+      if (currentUser && db) {
+        try {
+          const docRef = doc(db, 'users', currentUser.uid, 'dados', 'estado_geral');
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            dadosSalvos = docSnap.data();
+          } else {
+            const local = localStorage.getItem('calc3d_data');
+            if (local) {
+              dadosSalvos = JSON.parse(local);
+              await setDoc(docRef, dadosSalvos);
+            }
+          }
+        } catch (e) {
+          console.error("Erro a ler Firebase. Carregando fallback local.", e);
+          document.getElementById('cloudStatusBadge').innerHTML = '<i class="bi bi-cloud-slash text-danger me-1"></i> Erro Permissão';
+          document.getElementById('cloudStatusBadge').className = "badge badge-status top-status-pill status-error";
+          const local = localStorage.getItem('calc3d_data');
+          if (local) dadosSalvos = JSON.parse(local);
+        }
+      } else {
+        const local = localStorage.getItem('calc3d_data');
+        if (local) dadosSalvos = JSON.parse(local);
+      }
+
+      if (dadosSalvos) {
+        try {
+          estado = { ...estado, ...dadosSalvos, ajustes: { ...estado.ajustes, ...(dadosSalvos.ajustes || {}) }, empresa: { ...estado.empresa, ...(dadosSalvos.empresa || {}) } };
+          if (!estado.proximoIdEstoque) estado.proximoIdEstoque = estado.estoque.length + 1;
+          if (!estado.proximoIdHistorico) estado.proximoIdHistorico = estado.historico.length + 1;
+        } catch (e) { }
+      }
+
+      Object.keys(estado.ajustes).forEach(k => { const el = document.getElementById(k); if (el) el.value = estado.ajustes[k] });
+      const orcEmpresaEl = document.getElementById('orc_empresa');
+      if (orcEmpresaEl) orcEmpresaEl.value = estado.empresa.nome;
+      const empresaNomeEl = document.getElementById('empresaNome');
+      if (empresaNomeEl) empresaNomeEl.value = estado.empresa.nome;
+      document.getElementById('empresaLogo').value = estado.empresa.logo;
+      document.getElementById('pixChave').value = estado.empresa.pix;
+      document.getElementById('validadeDias').value = estado.empresa.validadeDias;
+      document.getElementById('prazoEntrega').value = estado.empresa.prazoEntrega;
+      document.getElementById('assinatura').value = estado.empresa.assinatura;
+      document.getElementById('garantia').value = estado.empresa.garantia;
+      document.getElementById('observacoes').value = estado.empresa.observacoes;
+      document.getElementById('selectImpressora').value = Object.keys(commonPrinters).find(p => estado.ajustes.nomeMaquina?.startsWith(p.substring(0, 10))) || '';
+    }
+
+    // --- FIREBASE SYNC: SAVE ---
+    async function salvarEstado() {
+      ['nomeMaquina', 'potenciaW', 'valorMaquina', 'vidaUtil', 'custoKwh', 'custoMaterialPadrao', 'maoObraHora'].forEach(id => { const el = document.getElementById(id); estado.ajustes[id] = el.type === 'number' ? (parseFloat(el.value) || 0) : el.value });
+      estado.ajustes.vidaUtil = estado.ajustes.vidaUtil || 1;
+      const empresaNomeEl = document.getElementById('empresaNome') || document.getElementById('orc_empresa');
+      estado.empresa = { nome: empresaNomeEl ? empresaNomeEl.value : '', logo: document.getElementById('empresaLogo').value, pix: document.getElementById('pixChave').value, validadeDias: parseInt(document.getElementById('validadeDias').value) || 7, prazoEntrega: document.getElementById('prazoEntrega').value, assinatura: document.getElementById('assinatura').value, garantia: document.getElementById('garantia').value, observacoes: document.getElementById('observacoes').value };
+
+      localStorage.setItem('calc3d_data', JSON.stringify(estado));
+
+      if (currentUser && db) {
+        try {
+          document.getElementById('cloudStatusBadge').innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i> Guardar...';
+          const docRef = doc(db, 'users', currentUser.uid, 'dados', 'estado_geral');
+          await setDoc(docRef, estado);
+          document.getElementById('cloudStatusBadge').innerHTML = '<i class="bi bi-cloud-check me-1"></i> Sincronizado';
+          document.getElementById('cloudStatusBadge').className = "badge badge-status top-status-pill status-synced";
+        } catch (e) {
+          console.error("Erro ao guardar na nuvem:", e);
+          document.getElementById('cloudStatusBadge').innerHTML = '<i class="bi bi-cloud-slash me-1"></i> Falha Cloud';
+          document.getElementById('cloudStatusBadge').className = "badge badge-status top-status-pill status-error";
+        }
+      }
+    }
+
+    async function salvarEstadoAjustes(msg) {
+      await salvarEstado();
+      showToast(msg, 'success');
+    }
+
+    function fazerDownloadBackup() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(estado)); const d = document.createElement('a'); d.href = dataStr; d.download = "calc3d_backup.json"; d.click(); showToast('Backup exportado com sucesso!', 'success'); }
+    async function carregarBackup(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async t => { try { const d = JSON.parse(t.target.result); estado = { ...estado, ...d }; await salvarEstado(); location.reload() } catch (err) { showToast('Erro no ficheiro importado!', 'error') } }; reader.readAsText(file); }
+
+    function parseTempo(input) { input = String(input || '0'); if (input.includes(':')) { const [h, m] = input.split(':').map(Number); return (h || 0) + (m || 0) / 60 } return parseFloat(input.replace(',', '.')) || 0 }
+
+    function calcularProjeto() {
+      salvarEstado();
+      const pesoG = parseFloat(document.getElementById('pesoGrama').value) || 0;
+      const tempoH = parseTempo(document.getElementById('tempoImpressao').value);
+      const custoMaterialKg = parseFloat(document.getElementById('custoMaterialEspecifico').value) || estado.ajustes.custoMaterialPadrao;
+      const risco = parseFloat(document.getElementById('riscoSlider').value) / 100;
+      const margemLucro = parseFloat(document.getElementById('lucroSlider').value) / 100;
+      const tempoAcabH = parseTempo(document.getElementById('tempoAcabamento').value || '0');
+      const maoObra = estado.ajustes.maoObraHora;
+      const qtdPecas = Math.max(1, parseInt(document.getElementById('qtdPecas').value) || 1);
+
+      const custoMaterial = (pesoG / 1000) * custoMaterialKg;
+      const consumoKwh = (estado.ajustes.potenciaW * tempoH) / 1000;
+      const custoEnergia = consumoKwh * estado.ajustes.custoKwh;
+      const custoDep = (estado.ajustes.valorMaquina / estado.ajustes.vidaUtil) * tempoH;
+      const custoMO = tempoAcabH * maoObra;
+
+      let custoMat2 = 0;
+      if (document.getElementById('switchMultiMaterial').checked) {
+        custoMat2 = ((parseFloat(document.getElementById('peso2Grama').value) || 0) / 1000) * (parseFloat(document.getElementById('custo2Kg').value) || 0);
+      }
+
+      const custoSemRisco = custoMaterial + custoMat2 + custoEnergia + custoDep + custoMO;
+      const custoComRisco = custoSemRisco * (1 + risco);
+      const precoUnit = custoComRisco * (1 + margemLucro);
+      const lucroUnit = precoUnit - custoComRisco;
+      const precoFinal = precoUnit * qtdPecas;
+      const lucro = lucroUnit * qtdPecas;
+      const roi = lucroUnit > 0 ? Math.ceil(estado.ajustes.valorMaquina / lucroUnit) : Infinity;
+
+      estado.calculoAtual = {
+        cliente: document.getElementById('clienteNome').value.trim() || 'Projeto sem nome',
+        pesoG, tempoH, custoMaterialKg, custoMaterial, custoMat2, custoEnergia, custoDep, custoMO,
+        custoSemRisco, custoComRisco, risco, margemLucro,
+        precoUnit, lucroUnit, qtdPecas,
+        precoFinal, lucro, roi,
+        multiMaterial: document.getElementById('switchMultiMaterial').checked,
+        data: new Date().toISOString()
+      };
+      exibirResultados();
+    }
+
+    function atualizarCalc() { if (estado.calculoAtual) calcularProjeto() }
+
+    function ajustarQtd(delta) { const el = document.getElementById('qtdPecas'); el.value = Math.max(1, (parseInt(el.value) || 1) + delta); atualizarQtdBadge(); atualizarCalc(); }
+    function setQtd(n) { document.getElementById('qtdPecas').value = n; atualizarQtdBadge(); atualizarCalc(); }
+    function atualizarQtdBadge() { const n = Math.max(1, parseInt(document.getElementById('qtdPecas').value) || 1); const b = document.getElementById('qtdBadge'); if (b) b.textContent = n === 1 ? '1 peça' : `${n} peças`; }
+    window.ajustarQtd = ajustarQtd; window.setQtd = setQtd; window.atualizarQtdBadge = atualizarQtdBadge;
+
+    function fmt(v) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function exibirResultados() {
+      const c = estado.calculoAtual;
+      const multi = c.qtdPecas > 1;
+      document.getElementById('precoFinalDisplay').textContent = multi ? `R$ ${fmt(c.precoFinal)}` : `R$ ${fmt(c.precoUnit || c.precoFinal)}`;
+      document.getElementById('custoDisplay').textContent = `R$ ${fmt(c.custoComRisco * (c.qtdPecas || 1))}`;
+      document.getElementById('lucroDisplay').textContent = `R$ ${fmt(c.lucro)}`;
+      document.getElementById('roiDisplay').textContent = isFinite(c.roi) ? c.roi : '∞';
+      const row = document.getElementById('qtdTotalRow');
+      if (row) {
+        if (multi) {
+          row.classList.remove('d-none');
+          document.getElementById('precoUnitDisplay').textContent = `R$ ${fmt(c.precoUnit)}`;
+          document.getElementById('precoTotalDisplay').textContent = `R$ ${fmt(c.precoFinal)}`;
+          document.getElementById('qtdTotalLabel').textContent = c.qtdPecas;
+        } else {
+          row.classList.add('d-none');
+        }
+      }
+      const total = c.custoSemRisco || 1;
+      const vals = [
+        ['barMaterial', (c.custoMaterial + c.custoMat2) / total * 100],
+        ['barEnergia', c.custoEnergia / total * 100],
+        ['barDepreciacao', c.custoDep / total * 100],
+        ['barMaoObra', c.custoMO / total * 100]
+      ];
+      vals.forEach(([id, p]) => { const el = document.getElementById(id); el.style.width = Math.max(0, Math.min(100, p)) + '%'; });
+    }
+
+    function toggleMultiMaterial() { document.getElementById('multiMaterialCampos').style.display = document.getElementById('switchMultiMaterial').checked ? 'flex' : 'none' }
+    function setMaterialRapido(valor) { document.getElementById('custoMaterialEspecifico').value = valor; seAbertoRecalcula(); }
+    function setMargemRapida(val) { document.getElementById('lucroSlider').value = val; document.getElementById('lucroValor').textContent = val + '%'; seAbertoRecalcula(); }
+    function seAbertoRecalcula() { if (estado.calculoAtual) calcularProjeto(); }
+
+    async function adicionarCarretel() { const nome = document.getElementById('estoqueNome').value.trim(), peso = parseFloat(document.getElementById('estoquePesoInicial').value), custo = parseFloat(document.getElementById('estoqueCustoKg').value); if (!nome || isNaN(peso) || isNaN(custo)) { showToast('Preencha todos os campos do filamento.', 'warning'); return; } estado.estoque.push({ id: estado.proximoIdEstoque++, nome, pesoInicial: peso, pesoRestante: peso, custoKg: custo }); await salvarEstado(); atualizarUIEstoque();['estoqueNome', 'estoquePesoInicial', 'estoqueCustoKg'].forEach(id => document.getElementById(id).value = ''); showToast('Filamento adicionado ao estoque!', 'success'); }
+    async function removerCarretel(id) { if (!confirm('Excluir do estoque?')) return; estado.estoque = estado.estoque.filter(e => e.id !== id); await salvarEstado(); atualizarUIEstoque(); showToast('Filamento removido.', 'info'); }
+    function atualizarUIEstoque() { document.getElementById('listaEstoque').innerHTML = estado.estoque.map(e => `<div class="list-group-item d-flex justify-content-between align-items-center" style="border-bottom: 1px solid var(--border-color); border-radius:0;"><div><strong class="d-block text-main mb-1">${e.nome}</strong><small class="text-muted"><i class="bi bi-circle-half me-1"></i> Restam: <span class="fw-bold text-primary">${e.pesoRestante.toFixed(0)}g</span> (de ${e.pesoInicial}g) &bull; R$${e.custoKg.toFixed(2)}/kg</small></div><button class="btn btn-sm btn-outline-danger border-0 rounded-circle" style="width:36px; height:36px;" onclick="removerCarretel(${e.id})"><i class="bi bi-trash"></i></button></div>`).join(''); document.getElementById('modalEstoqueList').innerHTML = estado.estoque.map(e => `<button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3" style="background:transparent; border-color:var(--border-color); color:var(--text-main);" onclick="selecionarDoEstoque(${e.id})" data-bs-dismiss="modal"><span class="fw-medium">${e.nome}</span> <span class="badge bg-primary bg-opacity-10 text-primary border border-primary rounded-pill px-3 py-2">${e.pesoRestante.toFixed(0)}g disp. <span class="text-muted ms-1 fw-normal">(R$${e.custoKg})</span></span></button>`).join(''); }
+    function selecionarDoEstoque(id) { const rolo = estado.estoque.find(e => e.id === id); if (rolo) { document.getElementById('custoMaterialEspecifico').value = rolo.custoKg; estado.roloSelecionadoId = id; seAbertoRecalcula(); showToast('Custo do filamento aplicado!', 'info'); } }
+
+    async function salvarNoHistorico() { if (!estado.calculoAtual) { showToast('Calcule o preço primeiro!', 'warning'); return; } const projeto = { id: estado.proximoIdHistorico++, ...estado.calculoAtual, dataSalvamento: new Date().toLocaleString('pt-BR') }; estado.historico.push(projeto); if (estado.roloSelecionadoId && projeto.pesoG > 0) { const rolo = estado.estoque.find(e => e.id === estado.roloSelecionadoId); if (rolo) { rolo.pesoRestante = Math.max(0, rolo.pesoRestante - projeto.pesoG); } estado.roloSelecionadoId = null } await salvarEstado(); atualizarUIHistorico(); atualizarUIEstoque(); atualizarDashboard(); showToast('Projeto guardado com sucesso!', 'success'); }
+    function atualizarUIHistorico() {
+      const itens = estado.historico.slice().reverse();
+      document.getElementById('listaHistorico').innerHTML = itens.length === 0
+        ? `<div class="col-12"><div class="empty-state"><i class="bi bi-clock-history"></i><p class="fw-medium">Nenhum projeto guardado ainda.</p><small>Calcule e clique em "Guardar Orçamento".</small></div></div>`
+        : itens.map(p => `<div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0 dashboard-card p-3"><div class="card-body p-0"><div class="d-flex justify-content-between mb-3 align-items-start"><h6 class="card-title fw-bold mb-0 text-truncate pe-2" style="color:var(--text-main); line-height: 1.4;" title="${p.cliente}">${p.cliente}</h6><span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-2 py-1">R$ ${fmt(p.precoFinal)}</span></div><div class="text-muted small mb-4 bg-light p-2 rounded-3 border" style="background: rgba(0,0,0,0.02) !important; border-color: var(--border-color) !important;"><div class="mb-1"><i class="bi bi-calendar3 text-primary me-2"></i> ${p.dataSalvamento}</div><div><i class="bi bi-box text-primary me-2"></i> ${p.pesoG}g &nbsp;|&nbsp; <i class="bi bi-clock text-primary mx-2"></i> ${p.tempoH.toFixed(2)}h</div></div><div class="d-flex gap-2"><button class="btn btn-sm btn-light border flex-grow-1 fw-medium" style="background:var(--bg-body); color:var(--text-main);" onclick="editarHistorico(${p.id})" title="Editar"><i class="bi bi-pencil me-1"></i> Editar</button><button class="btn btn-sm btn-light border flex-grow-1 fw-medium" style="background:var(--bg-body); color:var(--text-main);" onclick="duplicarHistorico(${p.id})" title="Duplicar"><i class="bi bi-files"></i></button><button class="btn btn-sm btn-light border text-danger" style="background:var(--bg-body);" onclick="gerarPDF(${p.id})" title="Gerar PDF"><i class="bi bi-file-pdf fs-6"></i></button><button class="btn btn-sm btn-outline-danger" onclick="excluirHistorico(${p.id})" title="Excluir"><i class="bi bi-trash"></i></button></div></div></div></div>`).join('');
+      const fat = estado.historico.reduce((a, p) => a + p.precoFinal, 0), luc = estado.historico.reduce((a, p) => a + p.lucro, 0);
+      document.getElementById('histFatTotal').textContent = fmt(fat);
+      document.getElementById('histLucroTotal').textContent = fmt(luc);
+      document.getElementById('histCount').textContent = estado.historico.length;
+    }
+
+    function editarHistorico(id) { const p = estado.historico.find(x => x.id === id); if (!p) return; document.getElementById('editId').value = id; document.getElementById('editCliente').value = p.cliente; document.getElementById('editPeso').value = p.pesoG; document.getElementById('editTempo').value = p.tempoH; document.getElementById('editPreco').value = p.precoFinal.toFixed(2); document.getElementById('editLucro').value = p.lucro.toFixed(2); document.getElementById('editMargem').value = (p.margemLucro * 100).toFixed(0); new bootstrap.Modal(document.getElementById('modalEditarHistorico')).show() }
+    async function salvarEdicaoHistorico() { const id = parseInt(document.getElementById('editId').value), p = estado.historico.find(x => x.id === id); if (!p) return; p.cliente = document.getElementById('editCliente').value; p.pesoG = parseFloat(document.getElementById('editPeso').value) || 0; p.tempoH = parseFloat(document.getElementById('editTempo').value) || 0; p.precoFinal = parseFloat(document.getElementById('editPreco').value) || 0; p.lucro = parseFloat(document.getElementById('editLucro').value) || 0; await salvarEstado(); atualizarUIHistorico(); atualizarDashboard(); bootstrap.Modal.getInstance(document.getElementById('modalEditarHistorico')).hide(); showToast('Projeto atualizado!', 'success'); }
+    async function excluirHistorico(id) { if (!confirm('Remover este projeto permanentemente?')) return; estado.historico = estado.historico.filter(x => x.id !== id); await salvarEstado(); atualizarUIHistorico(); atualizarDashboard(); showToast('Projeto removido.', 'info'); }
+    async function duplicarHistorico(id) { const p = estado.historico.find(x => x.id === id); if (!p) return; estado.historico.push({ ...p, id: estado.proximoIdHistorico++, cliente: p.cliente + ' - cópia', dataSalvamento: new Date().toLocaleString('pt-BR') }); await salvarEstado(); atualizarUIHistorico(); atualizarDashboard(); showToast('Projeto duplicado!', 'info'); }
+    function exportarCSV() { let csv = 'Data,Cliente,Peso(g),Tempo(h),Preço Final,Lucro\n'; estado.historico.forEach(p => { csv += `"${p.dataSalvamento}","${p.cliente}",${p.pesoG},${p.tempoH.toFixed(2)},${p.precoFinal.toFixed(2)},${p.lucro.toFixed(2)}\n` }); const blob = new Blob([csv], { type: 'text/csv' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'calc3d_historico.csv'; link.click(); }
+    function atualizarDashboard() { const fat = estado.historico.reduce((a, p) => a + p.precoFinal, 0); document.getElementById('fatTotal').textContent = fmt(fat); }
+
+    // ---- GERADOR DE PDF (Layout Mantido) ----
+    async function gerarPDFProfissional() {
+      if (!estado.calculoAtual) { alert("Atenção: Calcule o projeto primeiro para gerar o documento PDF!"); return; }
+      await processarPDF(estado.calculoAtual, estado.proximoIdHistorico);
+    }
+
+    async function gerarPDF(id) {
+      const p = estado.historico.find(x => x.id === id);
+      if (p) await processarPDF(p, id);
+    }
+
+    async function processarPDF(c, idOrcamento) {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const emp = estado.empresa || {};
+        const dataStr = new Date().toLocaleDateString('pt-BR');
+
+        const numOrcamento = idOrcamento || Math.floor(1000 + Math.random() * 9000);
+
+        doc.setFontSize(22);
+        doc.setTextColor(33, 37, 41);
+        doc.setFont(undefined, 'bold');
+        doc.text(emp.nome || 'JJCSC', 14, 20);
+
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text('Proposta de Impressão 3D', 14, 28);
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(33, 37, 41);
+        doc.text(`ORÇAMENTO #${numOrcamento}`, 196, 20, { align: 'right' });
+
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Data: ${dataStr}`, 196, 26, { align: 'right' });
+
+        doc.setFontSize(11);
+        doc.setTextColor(33, 37, 41);
+        doc.text(`Cliente: ${c.cliente || 'Projeto sem nome'}`, 14, 45);
+        doc.text(`Prazo de entrega: ${emp.prazoEntrega || 'A combinar'}`, 14, 52);
+
+        let dataValidade = new Date();
+        dataValidade.setDate(dataValidade.getDate() + (parseInt(emp.validadeDias) || 7));
+        doc.text(`Validade: até ${dataValidade.toLocaleDateString('pt-BR')}`, 14, 59);
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('Descrição', 14, 76);
+        doc.text('Qtd.', 110, 76);
+        doc.text('Unitário', 140, 76);
+        doc.text('Total', 170, 76);
+        doc.line(14, 79, 196, 79);
+
+        doc.setFont(undefined, 'normal');
+        let descItem = `Projeto 3D - ${c.pesoG.toFixed(2)}g - ${c.tempoH.toFixed(2)}h`;
+        doc.text(descItem, 14, 88);
+        doc.text('1', 110, 88);
+        doc.text(`R$ ${c.precoFinal.toFixed(2)}`, 140, 88);
+        doc.text(`R$ ${c.precoFinal.toFixed(2)}`, 170, 88);
+        doc.line(14, 93, 196, 93);
+
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('TOTAL: R$', 140, 105);
+        doc.text(c.precoFinal.toFixed(2), 170, 105);
+
+        let currentY = 125;
+        if (emp.pix) {
+          doc.setFontSize(12);
+          doc.setFont(undefined, 'bold');
+          doc.text('Pagamento Pix', 14, currentY);
+
+          doc.setFontSize(9);
+          doc.setFont(undefined, 'normal');
+          doc.text(`Chave: ${emp.pix}`, 14, currentY + 7);
+
+          try {
+            const qrCodeDataUrl = await QRCode.toDataURL(emp.pix, { margin: 1, width: 140 });
+            doc.addImage(qrCodeDataUrl, 'PNG', 140, currentY - 10, 36, 36);
+          } catch (err) { }
+          currentY += 45;
+        } else {
+          currentY += 10;
+        }
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.text('Observações', 14, currentY);
+
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.text(emp.observacoes || 'Orçamento sujeito à disponibilidade de material e aprovação do cliente.', 14, currentY + 7, { maxWidth: 180 });
+
+        currentY += 25;
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.text('Garantia', 14, currentY);
+
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.text(emp.garantia || '7 dias contra defeitos de fabricação', 14, currentY + 7, { maxWidth: 180 });
+
+        doc.setDrawColor(180, 180, 180);
+        doc.line(125, 252, 190, 252);
+        doc.setTextColor(80, 80, 80);
+        doc.setFontSize(9);
+        doc.text(emp.assinatura || 'Assinatura / responsável', 157.5, 258, { align: 'center' });
+
+        doc.setFontSize(8);
+        doc.setTextColor(140, 140, 140);
+        doc.text(`${emp.nome || 'JJCSC'} - orçamento gerado pelo Calc3D`, 14, 285);
+
+        const safeName = (c.cliente || 'Projeto').normalize('NFD').replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        doc.save(`Orcamento_${safeName}.pdf`);
+      } catch (error) {
+        console.error(error);
+        alert("Ocorreu um erro ao gerar o PDF.");
+      }
+    }
+
+    // ===== TOAST NOTIFICATIONS =====
+    function showToast(msg, type = 'info', duration = 3200) {
+      const icons = { success: 'bi-check-circle-fill', info: 'bi-info-circle-fill', warning: 'bi-exclamation-triangle-fill', error: 'bi-x-circle-fill' };
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const t = document.createElement('div');
+      t.className = `calc-toast toast-${type}`;
+      t.innerHTML = `<i class="bi ${icons[type] || icons.info}"></i><span>${msg}</span>`;
+      container.appendChild(t);
+      requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+      setTimeout(() => { t.classList.remove('show'); t.addEventListener('transitionend', () => t.remove()); }, duration);
+    }
+    window.showToast = showToast;
+
+    // Expõe explicitamente todas as funções para os botões do HTML continuarem a funcionar
+    window.toggleTheme = toggleTheme;
+    window.sincronizarEmpresaOrcamento = sincronizarEmpresaOrcamento;
+    window.sincronizarObservacoesOrcamento = sincronizarObservacoesOrcamento;
+    window.aplicarPerfilMaquina = aplicarPerfilMaquina;
+    window.setMaquinaRapida = setMaquinaRapida;
+    window.aplicarCustoEstado = aplicarCustoEstado;
+    window.salvarEstadoAjustes = salvarEstadoAjustes;
+    window.fazerDownloadBackup = fazerDownloadBackup;
+    window.carregarBackup = carregarBackup;
+    window.calcularProjeto = calcularProjeto;
+    window.atualizarCalc = atualizarCalc;
+    window.toggleMultiMaterial = toggleMultiMaterial;
+    window.setMaterialRapido = setMaterialRapido;
+    window.setMargemRapida = setMargemRapida;
+    window.adicionarCarretel = adicionarCarretel;
+    window.removerCarretel = removerCarretel;
+    window.selecionarDoEstoque = selecionarDoEstoque;
+    window.salvarNoHistorico = salvarNoHistorico;
+    window.editarHistorico = editarHistorico;
+    window.salvarEdicaoHistorico = salvarEdicaoHistorico;
+    window.excluirHistorico = excluirHistorico;
+    window.duplicarHistorico = duplicarHistorico;
+    window.exportarCSV = exportarCSV;
+    window.gerarPDFProfissional = gerarPDFProfissional;
+    window.gerarPDF = gerarPDF;
+
+    function irParaOrcamento() {
+      if (!estado.calculoAtual) { showToast('Calcule um projeto primeiro!', 'warning'); return; }
+      const tabEl = document.querySelector('[data-bs-target="#ajustes"]');
+      if (tabEl) { bootstrap.Tab.getOrCreateInstance(tabEl).show(); }
+      orc_init();
+      setTimeout(() => {
+        orc_importarCalculo();
+        document.getElementById('orcamentoDentroDefinicoes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    window.irParaOrcamento = irParaOrcamento;
+
+    // ===== ORÇAMENTO PDF BUILDER =====
+    let itensOrc = [];
+    let logoOrcBase64 = null;
+    let orcIniciado = false;
+
+    function orc_init() {
+      if (orcIniciado) return;
+      orcIniciado = true;
+      document.getElementById('orc_data').value = new Date().toISOString().split('T')[0];
+      document.getElementById('orc_numero').value = 'ORC-' + new Date().getFullYear() + '-' + String(Math.floor(100 + Math.random() * 900));
+      document.getElementById('orc_empresa').value = estado.empresa.nome || '';
+      document.getElementById('orc_slogan').value = 'Soluções em Impressão 3D';
+      document.getElementById('orc_obs').value = estado.empresa.observacoes || '';
+      renderItensFormOrc();
+      atualizarPreviewOrc();
+    }
+
+    function orc_handleLogo(e) {
+      const file = e.target.files[0]; if (!file) return;
+      document.getElementById('orc_logoName').textContent = file.name;
+      const r = new FileReader();
+      r.onload = t => { logoOrcBase64 = t.target.result; atualizarPreviewOrc(); };
+      r.readAsDataURL(file);
+    }
+
+    function orc_adicionarItem(desc = '', qty = 1, unit = 0) {
+      itensOrc.push({ desc, qty, unit }); renderItensFormOrc(); atualizarPreviewOrc();
+    }
+
+    function orc_removerItem(i) {
+      itensOrc.splice(i, 1); renderItensFormOrc(); atualizarPreviewOrc();
+    }
+
+    function orc_importarCalculo() {
+      if (!estado.calculoAtual) { showToast('Calcule um projeto primeiro na aba CALCULAR!', 'warning'); return; }
+      const c = estado.calculoAtual;
+      document.getElementById('orc_cliente').value = c.cliente || '';
+      itensOrc = [{ desc: `Impressão 3D – ${c.pesoG}g / ${c.tempoH.toFixed(2)}h`, qty: 1, unit: c.precoFinal }];
+      renderItensFormOrc(); atualizarPreviewOrc();
+      showToast('Cálculo importado com sucesso!', 'success');
+    }
+
+    function renderItensFormOrc() {
+      const el = document.getElementById('orc_itensForm'); if (!el) return;
+      el.innerHTML = itensOrc.length === 0
+        ? `<div class="text-center text-muted py-3 small"><i class="bi bi-plus-circle me-1"></i>Adicione itens ou importe um cálculo.</div>`
+        : itensOrc.map((item, i) => `<div class="row g-1 align-items-center p-2 rounded-3 border" style="border-color:var(--border-color)!important;background:var(--bg-body)">
+        <div class="col-5"><input class="form-control form-control-sm" placeholder="Descrição" value="${item.desc.replace(/"/g, '&quot;')}" oninput="itensOrc[${i}].desc=this.value;atualizarPreviewOrc()"></div>
+        <div class="col-2"><input class="form-control form-control-sm text-center" type="number" value="${item.qty}" min="1" oninput="itensOrc[${i}].qty=parseFloat(this.value)||1;atualizarPreviewOrc()"></div>
+        <div class="col-3"><input class="form-control form-control-sm" type="number" placeholder="R$ Unit." value="${item.unit.toFixed(2)}" oninput="itensOrc[${i}].unit=parseFloat(this.value)||0;atualizarPreviewOrc()"></div>
+        <div class="col-2 text-end"><button class="btn btn-sm btn-outline-danger border-0 rounded-circle" style="width:28px;height:28px;padding:0" onclick="orc_removerItem(${i})"><i class="bi bi-trash" style="font-size:.75rem"></i></button></div>
+      </div>`).join('');
+    }
+
+    function atualizarPreviewOrc() {
+      const g = id => document.getElementById(id)?.value || '';
+      const empresa = g('orc_empresa') || 'SUA EMPRESA', slogan = g('orc_slogan'), email = g('orc_email'),
+        tel = g('orc_telefone'), cliente = g('orc_cliente') || '—', contato = g('orc_clienteContato'),
+        num = g('orc_numero'), data = g('orc_data'), obs = g('orc_obs');
+      const desc = parseFloat(g('orc_desconto')) || 0, frete = parseFloat(g('orc_frete')) || 0;
+      const subtotal = itensOrc.reduce((s, i) => s + (i.qty * i.unit), 0);
+      const descVal = subtotal * (desc / 100), total = subtotal - descVal + frete;
+      const dataFmt = data ? new Date(data + 'T12:00').toLocaleDateString('pt-BR') : '—';
+      const rows = itensOrc.length === 0
+        ? `<tr><td colspan="4" style="text-align:center;padding:1rem;color:#94a3b8;font-size:.8rem">Nenhum item</td></tr>`
+        : itensOrc.map(i => `<tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:.4rem 0;font-size:.78rem">${i.desc || '—'}</td>
+        <td style="padding:.4rem 0;text-align:center;font-size:.78rem">${i.qty}</td>
+        <td style="padding:.4rem 0;text-align:right;font-size:.78rem">R$ ${fmt(i.unit)}</td>
+        <td style="padding:.4rem 0;text-align:right;font-size:.78rem;font-weight:700">R$ ${fmt(i.qty * i.unit)}</td>
+      </tr>`).join('');
+      const el = document.getElementById('orc_preview'); if (!el) return;
+      el.innerHTML = `<div style="background:#fff;padding:1rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2.5rem">
+      <div>${logoOrcBase64 ? `<img src="${logoOrcBase64}" style="max-height:52px;max-width:130px;object-fit:contain;display:block;margin-bottom:.5rem">` : ''}
+        <h4 style="font-size:1.35rem;font-weight:900;text-transform:uppercase;color:#7C83FF;margin:0;letter-spacing:-.02em;line-height:1.1">${empresa}</h4>
+        ${slogan ? `<p style="font-size:.65rem;color:#94a3b8;margin:.25rem 0 0">${slogan}</p>` : ''}
+        ${(email || tel) ? `<p style="font-size:.65rem;color:#94a3b8;margin:.1rem 0 0">${[email, tel].filter(Boolean).join(' · ')}</p>` : ''}
+      </div>
+      <div style="text-align:right">
+        <h5 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0">ORÇAMENTO #${num}</h5>
+        <p style="font-size:.75rem;color:#64748b;margin:.3rem 0 0">Data: ${dataFmt}</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid #f1f5f9">
+      <div><p style="font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin:0 0 .3rem;letter-spacing:.05em">DESTINATÁRIO</p>
+        <p style="font-size:.9rem;font-weight:700;margin:0;color:#0f172a">${cliente}</p>
+        ${contato ? `<p style="font-size:.75rem;color:#64748b;margin:.15rem 0 0">${contato}</p>` : ''}
+      </div>
+      <div style="text-align:right"><p style="font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;margin:0 0 .3rem;letter-spacing:.05em">Emitido Por</p>
+        <p style="font-size:.9rem;font-weight:700;margin:0;color:#0f172a">${empresa}</p>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:2.5rem">
+      <thead><tr style="border-bottom:1px solid #e2e8f0;text-align:left">
+        <th style="padding-bottom:.75rem;font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.05em">Item</th>
+        <th style="padding-bottom:.75rem;font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.05em;text-align:center">Qtd</th>
+        <th style="padding-bottom:.75rem;font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.05em;text-align:right">Preço Unit.</th>
+        <th style="padding-bottom:.75rem;font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.05em;text-align:right">Total</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem">
+      <div style="flex:1"></div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.5rem"><span style="color:#64748b">Subtotal:</span><span style="font-weight:700">R$&nbsp;${fmt(subtotal)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.5rem"><span style="color:#64748b">Frete:</span><span style="font-weight:700">R$&nbsp;${fmt(frete)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.875rem;color:#16a34a;margin-bottom:.5rem"><span>Desconto (${desc}%):</span><span style="font-weight:700">- R$&nbsp;${fmt(descVal)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1.25rem;border-top:1px solid #e2e8f0;padding-top:1rem;margin-top:1rem">
+          <span style="font-weight:900">TOTAL:</span><span style="font-weight:900;color:#7C83FF">R$&nbsp;${fmt(total)}</span>
+        </div>
+      </div>
+    </div>
+    ${obs ? `<div style="margin-top:2.5rem;padding-top:1rem;border-top:1px solid #f1f5f9"><p style="font-size:.6rem;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:.05em;margin:0 0 .3rem">Observações</p><p style="font-size:.8rem;color:#475569;margin:0">${obs}</p></div>` : ''}
+  </div>`;
+    }
+
+    async function gerarPDFOrcamento() {
+      try {
+        await salvarEstado();
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        const g = id => document.getElementById(id)?.value || '';
+        const emp = g('orc_empresa') || 'SUA EMPRESA', sl = g('orc_slogan'), em = g('orc_email'), tel = g('orc_telefone');
+        const cli = g('orc_cliente') || '—', cct = g('orc_clienteContato'), num = g('orc_numero'), data = g('orc_data'), obs = g('orc_obs');
+        const desc = parseFloat(g('orc_desconto')) || 0, frete = parseFloat(g('orc_frete')) || 0;
+        const subtotal = itensOrc.reduce((s, i) => s + (i.qty * i.unit), 0);
+        const descVal = subtotal * (desc / 100), total = subtotal - descVal + frete;
+        const dataFmt = data ? new Date(data + 'T12:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+        const blue = [59, 130, 246], dark = [15, 23, 42], muted = [100, 116, 139];
+        let y = 22;
+        if (logoOrcBase64) { try { doc.addImage(logoOrcBase64, 'PNG', 14, y - 8, 28, 14); } catch (e) { } }
+        const tx = logoOrcBase64 ? 46 : 14;
+        doc.setFontSize(15); doc.setFont(undefined, 'bold'); doc.setTextColor(...blue); doc.text(emp.toUpperCase(), tx, y);
+        if (sl) { doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(...muted); doc.text(sl, tx, y + 5); }
+        if (em || tel) { doc.setFontSize(7.5); doc.text([em, tel].filter(Boolean).join(' · '), tx, y + 9); }
+        doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(...muted); doc.text('ORÇAMENTO', 196, y - 3, { align: 'right' });
+        doc.setFontSize(13); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark); doc.text(`#${num}`, 196, y + 4, { align: 'right' });
+        doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(...muted); doc.text(`Data: ${dataFmt}`, 196, y + 9, { align: 'right' });
+        y = 38; doc.setDrawColor(...blue); doc.setLineWidth(.7); doc.line(14, y, 196, y); y += 8;
+        doc.setFontSize(7); doc.setFont(undefined, 'bold'); doc.setTextColor(...muted); doc.text('DESTINATÁRIO', 14, y); doc.text('EMITIDO POR', 196, y, { align: 'right' }); y += 4;
+        doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark); doc.text(cli, 14, y); doc.text(emp, 196, y, { align: 'right' });
+        if (cct) { doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(...muted); doc.text(cct, 14, y + 4); }
+        y += 14; doc.setDrawColor(200, 200, 200); doc.setLineWidth(.3); doc.line(14, y, 196, y); y += 5;
+        doc.setFontSize(7); doc.setFont(undefined, 'bold'); doc.setTextColor(...muted);
+        doc.text('ITEM', 14, y); doc.text('QTD', 110, y, { align: 'center' }); doc.text('UNIT.', 155, y, { align: 'right' }); doc.text('TOTAL', 196, y, { align: 'right' }); y += 2;
+        doc.setLineWidth(.2); doc.line(14, y, 196, y); y += 5;
+        itensOrc.forEach(item => {
+          const tot = item.qty * item.unit;
+          doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.setTextColor(...dark);
+          const lines = doc.splitTextToSize(item.desc || '—', 88);
+          doc.text(lines, 14, y); doc.text(String(item.qty), 110, y, { align: 'center' });
+          doc.text(`R$ ${fmt(item.unit)}`, 155, y, { align: 'right' }); doc.text(`R$ ${fmt(tot)}`, 196, y, { align: 'right' });
+          y += lines.length * 5 + 1; doc.setDrawColor(230, 230, 230); doc.line(14, y, 196, y); y += 3;
+        });
+        y += 4; const rx = 196;
+        const row = (label, val, color) => { doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.setTextColor(color ? color[0] : 100, color ? color[1] : 116, color ? color[2] : 139); doc.text(label, 140, y); doc.setFont(undefined, 'bold'); doc.setTextColor(...(color || dark)); doc.text(val, rx, y, { align: 'right' }); y += 6; };
+        row('Subtotal:', `R$ ${fmt(subtotal)}`);
+        if (frete > 0) row('Frete:', `R$ ${fmt(frete)}`);
+        if (desc > 0) row(`Desconto (${desc}%):`, `- R$ ${fmt(descVal)}`, [16, 185, 129]);
+        y += 2; doc.setDrawColor(200, 200, 200); doc.line(140, y, 196, y); y += 5;
+        doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(...dark); doc.text('TOTAL:', 140, y); doc.setTextColor(...blue); doc.text(`R$ ${fmt(total)}`, rx, y, { align: 'right' });
+        if (obs) { y += 14; doc.setFontSize(8); doc.setFont(undefined, 'bold'); doc.setTextColor(...muted); doc.text('OBSERVAÇÕES', 14, y); y += 5; doc.setFont(undefined, 'normal'); doc.setTextColor(...dark); const ol = doc.splitTextToSize(obs, 180); doc.text(ol, 14, y); }
+        doc.setFontSize(7); doc.setTextColor(180, 180, 180); doc.text(`Gerado por Calc3D · ${emp}`, 14, 285);
+        const safe = (cli).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        doc.save(`Orcamento_${safe}.pdf`);
+      } catch (err) { console.error(err); alert('Erro ao gerar PDF.'); }
+    }
+
+    window.orc_init = orc_init;
+    window.orc_handleLogo = orc_handleLogo;
+    window.orc_adicionarItem = orc_adicionarItem;
+    window.orc_removerItem = orc_removerItem;
+    window.orc_importarCalculo = orc_importarCalculo;
+    window.atualizarPreviewOrc = atualizarPreviewOrc;
+    window.gerarPDFOrcamento = gerarPDFOrcamento;
+  </script>
 </body>
+
 </html>
